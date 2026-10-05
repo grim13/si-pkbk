@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             PersyaratanAdministrasiSeeder::class,
             JenisBerkasPendaftaranSeeder::class,
-            PendaftaranPesertaSeeder::class,
         ]);
     }
 }
+

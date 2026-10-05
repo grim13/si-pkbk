@@ -23,5 +23,27 @@ class AdminUserSeeder extends Seeder
         );
 
         $admin->assignRole('administrator');
+
+        $pekerja_sosial = User::updateOrCreate(
+            ['email' => 'pekerjasosial@sipkbk.com'],
+            [
+                'name' => 'Pekerja Sosial',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $pekerja_sosial->assignRole('pekerja_sosial');
+
+        $kepala_seksi = User::updateOrCreate(
+            ['email' => 'kepalaseksi@sipkbk.com'],
+            [
+                'name' => 'Kepala Seksi',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $kepala_seksi->assignRole('kepala_seksi');
     }
 }
