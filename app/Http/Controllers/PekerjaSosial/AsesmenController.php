@@ -36,8 +36,7 @@ class AsesmenController extends Controller
             return redirect()->route('pekerja-sosial.asesmen.index')->with('error', 'Peserta belum masuk tahap asesmen.');
         }
 
-        $pendaftaran->load('wali');
-        $pendaftaran->wali->load('anggotaKeluarga');
+        $pendaftaran->load(['wali.user', 'wali.anggotaKeluarga']);
 
         // Ambil data asesmen jika sudah ada, atau buat instance kosong (tanpa save)
         $asesmen = $pendaftaran->asesmen()->with('jawaban')->first();
@@ -77,7 +76,12 @@ class AsesmenController extends Controller
 
         // Update Wali (Identitas Keluarga)
         if ($request->has('wali') && is_array($request->wali)) {
-            $pendaftaran->wali->update($request->wali);
+            $waliData = $request->wali;
+            if (isset($waliData['nama']) && $pendaftaran->wali && $pendaftaran->wali->user) {
+                $pendaftaran->wali->user->update(['name' => $waliData['nama']]);
+            }
+            unset($waliData['nama']); // Hapus atribut nama karena bukan kolom di tabel wali
+            $pendaftaran->wali->update($waliData);
         }
 
         // Update Anggota Keluarga
