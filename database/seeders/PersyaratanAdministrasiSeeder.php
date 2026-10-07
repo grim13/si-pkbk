@@ -26,7 +26,7 @@ class PersyaratanAdministrasiSeeder extends Seeder
         ];
 
         foreach ($data as $deskripsi) {
-            PersyaratanAdministrasi::create(['deskripsi' => $deskripsi]);
+            PersyaratanAdministrasi::firstOrCreate(['deskripsi' => $deskripsi]);
         }
     }
 }

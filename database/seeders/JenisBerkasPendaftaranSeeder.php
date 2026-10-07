@@ -12,14 +12,13 @@ class JenisBerkasPendaftaranSeeder extends Seeder
      */
     public function run(): void
     {
-        JenisBerkasPendaftaran::query()->delete();
-
         $berkas = [
             'Surat Permohonan Orang Tua / Wali',
             'Surat Pengantar dari Desa/Kelurahan',
             'Surat Keterangan Tidak Mampu',
             'Surat Keterangan Kesehatan',
             'Surat Keterangan Dokter (disabilitas) (bila ada)',
+            
             'Pas Photo ukuran 3 x 4 (4 lembar)',
             'Ijazah / STTB',
             'Kartu Keluarga',
@@ -48,12 +47,14 @@ class JenisBerkasPendaftaranSeeder extends Seeder
                 $template_surat = strtolower(str_replace([' ', '/', '\\', '___', '__'], '_', $nama_berkas)) . '.docx';
             }
 
-            JenisBerkasPendaftaran::create([
-                'nama_berkas' => $nama_berkas,
-                'required' => !str_contains($nama_berkas, '(bila ada)'),
-                'format_file' => $format_file,
-                'template_surat' => $template_surat,
-            ]);
+            JenisBerkasPendaftaran::updateOrCreate(
+                ['nama_berkas' => $nama_berkas],
+                [
+                    'required' => !str_contains($nama_berkas, '(bila ada)'),
+                    'format_file' => $format_file,
+                    'template_surat' => $template_surat,
+                ]
+            );
         }
     }
 }
