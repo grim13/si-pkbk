@@ -7,6 +7,7 @@
     import Shield from '@lucide/svelte/icons/shield';
     import Contact from '@lucide/svelte/icons/contact';
     import FileText from '@lucide/svelte/icons/file-text';
+    import GraduationCap from '@lucide/svelte/icons/graduation-cap';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -86,6 +87,14 @@
         },
     ];
 
+    const kepalaSeksiItems: NavItem[] = [
+        {
+            title: 'Penentuan Kelulusan',
+            href: '/kepala-seksi/kelulusan',
+            icon: GraduationCap,
+        },
+    ];
+
     const footerNavItems: NavItem[] = [
         {
             title: 'Repository',
@@ -133,6 +142,9 @@
         {/if}
         {#if user?.permissions?.includes('asesmen.do')}
             <NavMain items={pekerjaSosialItems} label="Pekerja Sosial" />
+        {/if}
+        {#if user?.permissions?.includes('pendaftaran.kelulusan')}
+            <NavMain items={kepalaSeksiItems} label="Kepala Seksi" />
         {/if}
     </SidebarContent>
 

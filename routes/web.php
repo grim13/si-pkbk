@@ -47,6 +47,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/pekerja-sosial/asesmen/{pendaftaran}', [\App\Http\Controllers\PekerjaSosial\AsesmenController::class, 'show'])->name('pekerja-sosial.asesmen.show');
         Route::post('/pekerja-sosial/asesmen/{pendaftaran}', [\App\Http\Controllers\PekerjaSosial\AsesmenController::class, 'store'])->name('pekerja-sosial.asesmen.store');
     });
+
+    Route::middleware(['can:pendaftaran.kelulusan'])->group(function () {
+        Route::get('/kepala-seksi/kelulusan', [\App\Http\Controllers\KepalaSeksi\KelulusanController::class, 'index'])->name('kepala-seksi.kelulusan.index');
+        Route::get('/kepala-seksi/kelulusan/{pendaftaran}', [\App\Http\Controllers\KepalaSeksi\KelulusanController::class, 'show'])->name('kepala-seksi.kelulusan.show');
+        Route::post('/kepala-seksi/kelulusan/{pendaftaran}', [\App\Http\Controllers\KepalaSeksi\KelulusanController::class, 'update'])->name('kepala-seksi.kelulusan.update');
+    });
 });
 
 require __DIR__.'/settings.php';

@@ -46,5 +46,11 @@ class RolePermissionTableSeeder extends Seeder
         if ($pekerjaSosialRole) {
             $pekerjaSosialRole->givePermissionTo($asesmenPermission);
         }
+
+        $kelulusanPermission = Permission::firstOrCreate(['name' => 'pendaftaran.kelulusan']);
+        $kepalaSeksiRole = Role::where('name', 'kepala_seksi')->first();
+        if ($kepalaSeksiRole) {
+            $kepalaSeksiRole->givePermissionTo($kelulusanPermission);
+        }
     }
 }

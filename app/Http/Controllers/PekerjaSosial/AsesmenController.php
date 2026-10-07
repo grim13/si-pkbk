@@ -17,7 +17,7 @@ class AsesmenController extends Controller
     public function index()
     {
         $peserta = PendaftaranPeserta::with('wali')
-            ->whereIn('status_pendaftaran', ['asesmen', 'diterima', 'ditolak'])
+            ->whereIn('status_pendaftaran', ['asesmen', 'selesai_asesmen', 'diterima', 'ditolak'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -32,7 +32,7 @@ class AsesmenController extends Controller
     public function show(PendaftaranPeserta $pendaftaran)
     {
         // Pastikan pendaftaran sudah di tahap asesmen atau lebih
-        if (!in_array($pendaftaran->status_pendaftaran, ['asesmen', 'diterima', 'ditolak'])) {
+        if (!in_array($pendaftaran->status_pendaftaran, ['asesmen', 'selesai_asesmen', 'diterima', 'ditolak'])) {
             return redirect()->route('pekerja-sosial.asesmen.index')->with('error', 'Peserta belum masuk tahap asesmen.');
         }
 
@@ -120,6 +120,10 @@ class AsesmenController extends Controller
                     ]
                 );
             }
+        }
+
+        if ($request->status === 'selesai' && $pendaftaran->status_pendaftaran === 'asesmen') {
+            $pendaftaran->update(['status_pendaftaran' => 'selesai_asesmen']);
         }
 
         return redirect()->route('pekerja-sosial.asesmen.show', $pendaftaran->id)
