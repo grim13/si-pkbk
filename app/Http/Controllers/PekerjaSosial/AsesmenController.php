@@ -58,43 +58,82 @@ class AsesmenController extends Controller
      */
     public function store(Request $request, PendaftaranPeserta $pendaftaran)
     {
-        // Validasi struktur (hanya validasi dasar, sisanya fleksibel karena panjang)
         $request->validate([
             'status' => 'required|in:draft,selesai',
-            // Kita bisa menambahkan validasi lain sesuai kebutuhan
+            'pendaftaran.nama' => 'required|string',
+            'pendaftaran.nik' => 'required|string',
+            'pendaftaran.jenis_kelamin' => 'required|string|in:Laki-laki,Perempuan',
+            'pendaftaran.tempat_lahir' => 'required|string',
+            'pendaftaran.tanggal_lahir' => 'required|date',
+            'pendaftaran.agama' => 'required|string',
+            'pendaftaran.pendidikan' => 'required|string',
+            'pendaftaran.alamat_asal' => 'required|string',
+            'wali.nama' => 'required|string',
+            'wali.nomor_hp' => 'required|string',
+            'wali.tempat_lahir' => 'required|string',
+            'wali.tanggal_lahir' => 'required|date',
+            'wali.alamat' => 'required|string',
+        ], [
+            'pendaftaran.nama.required' => 'Nama lengkap klien wajib diisi.',
+            'pendaftaran.nik.required' => 'NIK klien wajib diisi.',
+            'pendaftaran.jenis_kelamin.required' => 'Jenis kelamin klien wajib dipilih.',
+            'pendaftaran.jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+            'pendaftaran.tempat_lahir.required' => 'Tempat lahir klien wajib diisi.',
+            'pendaftaran.tanggal_lahir.required' => 'Tanggal lahir klien wajib diisi.',
+            'pendaftaran.agama.required' => 'Agama klien wajib diisi.',
+            'pendaftaran.pendidikan.required' => 'Pendidikan terakhir klien wajib diisi.',
+            'pendaftaran.alamat_asal.required' => 'Alamat lengkap klien wajib diisi.',
+            'wali.nama.required' => 'Nama lengkap wali wajib diisi.',
+            'wali.nomor_hp.required' => 'Nomor HP wali wajib diisi.',
+            'wali.tempat_lahir.required' => 'Tempat lahir wali wajib diisi.',
+            'wali.tanggal_lahir.required' => 'Tanggal lahir wali wajib diisi.',
+            'wali.alamat.required' => 'Alamat lengkap wali wajib diisi.',
         ]);
 
         $data = $request->except(['jawaban', 'status', 'pendaftaran', 'wali', 'anggota_keluarga']);
         $data['status'] = $request->status;
         $data['pekerja_sosial_id'] = auth()->id();
-        $data['tanggal_asesmen'] = $request->tanggal_asesmen ?? now();
+        $data['tanggal_asesmen'] = $request->tanggal_asesmen ?: now();
+        $data['tujuan_bimbingan_sekolah'] = false;
 
         // Update Pendaftaran Peserta (Identitas Klien)
         if ($request->has('pendaftaran') && is_array($request->pendaftaran)) {
-            $pendaftaran->update($request->pendaftaran);
+            $pendaftaranData = $request->pendaftaran;
+            foreach (['tinggi_badan', 'berat_badan'] as $numericField) {
+                if (array_key_exists($numericField, $pendaftaranData) && $pendaftaranData[$numericField] === '') {
+                    $pendaftaranData[$numericField] = null;
+                }
+            }
+            $pendaftaran->update($pendaftaranData);
         }
 
         // Update Wali (Identitas Keluarga)
-        if ($request->has('wali') && is_array($request->wali)) {
+        if ($request->has('wali') && is_array($request->wali) && $pendaftaran->wali) {
             $waliData = $request->wali;
-            if (isset($waliData['nama']) && $pendaftaran->wali && $pendaftaran->wali->user) {
+            if (isset($waliData['nama']) && $pendaftaran->wali->user) {
                 $pendaftaran->wali->user->update(['name' => $waliData['nama']]);
             }
-            unset($waliData['nama']); // Hapus atribut nama karena bukan kolom di tabel wali
+            unset($waliData['nama']);
+            if (empty($waliData['nik'])) {
+                unset($waliData['nik']);
+            }
+            foreach (['penghasilan_perbulan', 'tanggungan_keluarga'] as $numericField) {
+                if (array_key_exists($numericField, $waliData) && $waliData[$numericField] === '') {
+                    $waliData[$numericField] = null;
+                }
+            }
             $pendaftaran->wali->update($waliData);
         }
 
-        // Update Anggota Keluarga
-        if ($request->has('anggota_keluarga') && is_array($request->anggota_keluarga)) {
-            // Delete existing ones not in the request, or simply delete all and recreate
+        // Update Anggota Keluarga (Opsional)
+        if ($request->has('anggota_keluarga') && is_array($request->anggota_keluarga) && $pendaftaran->wali) {
             $pendaftaran->wali->anggotaKeluarga()->delete();
             foreach ($request->anggota_keluarga as $ak) {
-                // If it's a valid row
-                if (!empty($ak['nama']) && !empty($ak['status'])) {
+                if (! empty($ak['nama']) && ! empty($ak['status'])) {
                     $pendaftaran->wali->anggotaKeluarga()->create([
                         'nama' => $ak['nama'],
                         'status' => $ak['status'],
-                        'tanggal_lahir' => $ak['tanggal_lahir'] ?? null,
+                        'tanggal_lahir' => ! empty($ak['tanggal_lahir']) ? $ak['tanggal_lahir'] : null,
                         'pendidikan' => $ak['pendidikan'] ?? null,
                         'pekerjaan' => $ak['pekerjaan'] ?? null,
                     ]);
@@ -107,16 +146,27 @@ class AsesmenController extends Controller
             $data
         );
 
-        // Simpan jawaban
+        // Simpan jawaban (Opsional)
         if ($request->has('jawaban') && is_array($request->jawaban)) {
             foreach ($request->jawaban as $pertanyaan_id => $jawaban) {
+                $yaTidak = $jawaban['jawaban_ya_tidak'] ?? null;
+                $text = isset($jawaban['jawaban_text']) && $jawaban['jawaban_text'] !== '' ? $jawaban['jawaban_text'] : null;
+                $number = isset($jawaban['jawaban_number']) && $jawaban['jawaban_number'] !== '' ? $jawaban['jawaban_number'] : null;
+                $keterangan = isset($jawaban['keterangan']) && $jawaban['keterangan'] !== '' ? $jawaban['keterangan'] : null;
+
+                if ($yaTidak === null && $text === null && $number === null && $keterangan === null) {
+                    $asesmen->jawaban()->where('asesmen_pertanyaan_id', $pertanyaan_id)->delete();
+
+                    continue;
+                }
+
                 $asesmen->jawaban()->updateOrCreate(
                     ['asesmen_pertanyaan_id' => $pertanyaan_id],
                     [
-                        'jawaban_ya_tidak' => $jawaban['jawaban_ya_tidak'] ?? null,
-                        'jawaban_text' => $jawaban['jawaban_text'] ?? null,
-                        'jawaban_number' => $jawaban['jawaban_number'] ?? null,
-                        'keterangan' => $jawaban['keterangan'] ?? null,
+                        'jawaban_ya_tidak' => $yaTidak,
+                        'jawaban_text' => $text,
+                        'jawaban_number' => $number,
+                        'keterangan' => $keterangan,
                     ]
                 );
             }

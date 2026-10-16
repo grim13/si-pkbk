@@ -1,7 +1,6 @@
 <script lang="ts">
     import { router } from '@inertiajs/svelte';
     import KeyRound from '@lucide/svelte/icons/key-round';
-    import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
     import Heading from '@/components/Heading.svelte';
     import PasskeyItem from '@/components/PasskeyItem.svelte';
     import PasskeyRegister from '@/components/PasskeyRegister.svelte';
@@ -15,7 +14,7 @@
     let { canManagePasskeys = false, passkeys = [] }: Props = $props();
 
     const handleDelete = (id: number, onError: () => void) => {
-        router.delete(destroy.url(id), {
+        router.delete(`/user/passkeys/${id}`, {
             preserveScroll: true,
             onError,
         });

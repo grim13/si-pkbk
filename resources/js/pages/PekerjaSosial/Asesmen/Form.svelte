@@ -19,6 +19,8 @@
     import { Label } from "@/components/ui/label";
     import { Textarea } from "@/components/ui/textarea";
     import { Checkbox } from "@/components/ui/checkbox";
+    import * as Select from "@/components/ui/select";
+    import InputError from "@/components/InputError.svelte";
     import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
     import { useForm, router } from "@inertiajs/svelte";
     import { untrack } from "svelte";
@@ -137,7 +139,6 @@
 
             // -------------------- LAIN-LAIN CHECKBOX --------------------
             tujuan_bimbingan_keterampilan: asesmen.tujuan_bimbingan_keterampilan || false,
-            tujuan_bimbingan_sekolah: asesmen.tujuan_bimbingan_sekolah || false,
             keterampilan_praktis_produktif: asesmen.keterampilan_praktis_produktif || false,
             keterampilan_massage_pijat: asesmen.keterampilan_massage_pijat || false,
             info_dokter_rs: asesmen.info_dokter_rs || false,
@@ -192,14 +193,20 @@
 
     function submit(status: "draft" | "selesai") {
         form.status = status;
-        form.post(`/pekerja-sosial/asesmen/${pendaftaran.id}`);
+        form.post(`/pekerja-sosial/asesmen/${pendaftaran.id}`, {
+            onError: (errs) => {
+                if (Object.keys(errs).some((k) => k.startsWith("pendaftaran.") || k.startsWith("wali."))) {
+                    currentStep = 1;
+                }
+            },
+        });
     }
 
     const steps = [
-        "1. Identitas Klien & Keluarga",
-        "2. Pendidikan & Latar Belakang",
-        "3. Kuesioner Asesmen",
-        "4. Kondisi Mental & Kesimpulan"
+        "1. Identitas Klien & Keluarga (Wajib)",
+        "2. Pendidikan & Latar Belakang (Opsional)",
+        "3. Kuesioner Asesmen (Opsional)",
+        "4. Kondisi Mental & Kesimpulan (Opsional)"
     ];
 </script>
 
@@ -207,7 +214,12 @@
 
 <div class="p-6 w-full max-w-5xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Form Asesmen Klien</h1>
+        <div>
+            <h1 class="text-2xl font-bold">Form Asesmen Klien</h1>
+            <p class="text-sm text-muted-foreground">
+                Data diri klien dan wali wajib diisi. Pengisian kuesioner/formulir asesmen lanjutan bersifat opsional.
+            </p>
+        </div>
         <div class="flex items-center gap-2">
             <span class="text-sm font-medium">Status saat ini: {asesmen.status?.toUpperCase() || 'DRAFT'}</span>
         </div>
@@ -217,6 +229,7 @@
     <div class="flex gap-2 p-2 bg-muted rounded-xl">
         {#each steps as step, index}
             <button
+                type="button"
                 class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors
                 {currentStep === index + 1 ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:bg-muted/80'}"
                 onclick={() => currentStep = index + 1}
@@ -232,25 +245,74 @@
         {#if currentStep === 1}
             <div class="space-y-6">
                 <Card>
-                    <CardHeader><CardTitle>Identitas Klien</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>Identitas Klien</CardTitle>
+                        <CardDescription>Kolom dengan tanda <span class="text-red-500">*</span> wajib diisi.</CardDescription>
+                    </CardHeader>
                     <CardContent class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2"><Label>Nama Lengkap</Label><Input bind:value={form.pendaftaran.nama} /></div>
+                        <div class="space-y-2">
+                            <Label>Nama Lengkap <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.pendaftaran.nama} required />
+                            <InputError message={(form.errors as any)['pendaftaran.nama']} />
+                        </div>
                         <div class="space-y-2"><Label>Nomor Induk Klien</Label><Input bind:value={form.pendaftaran.nomor_induk_klien} /></div>
-                        <div class="space-y-2"><Label>NIK (KTP)</Label><Input bind:value={form.pendaftaran.nik} /></div>
-                        <div class="space-y-2"><Label>Jenis Kelamin</Label><Input bind:value={form.pendaftaran.jenis_kelamin} /></div>
-                        <div class="space-y-2"><Label>Tempat Lahir</Label><Input bind:value={form.pendaftaran.tempat_lahir} /></div>
-                        <div class="space-y-2"><Label>Tanggal Lahir</Label><Input type="date" bind:value={form.pendaftaran.tanggal_lahir} /></div>
-                        <div class="space-y-2"><Label>Agama</Label><Input bind:value={form.pendaftaran.agama} /></div>
-                        <div class="space-y-2"><Label>Pendidikan Terakhir</Label><Input bind:value={form.pendaftaran.pendidikan} /></div>
+                        <div class="space-y-2">
+                            <Label>NIK (KTP) <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.pendaftaran.nik} required />
+                            <InputError message={(form.errors as any)['pendaftaran.nik']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Jenis Kelamin <span class="text-red-500">*</span></Label>
+                            <Select.Root
+                                type="single"
+                                value={form.pendaftaran.jenis_kelamin}
+                                onValueChange={(val) => {
+                                    form.pendaftaran.jenis_kelamin = val;
+                                }}
+                            >
+                                <Select.Trigger class="w-full">
+                                    {form.pendaftaran.jenis_kelamin || "Pilih Jenis Kelamin"}
+                                </Select.Trigger>
+                                <Select.Content>
+                                    <Select.Item value="Laki-laki" label="Laki-laki">Laki-laki</Select.Item>
+                                    <Select.Item value="Perempuan" label="Perempuan">Perempuan</Select.Item>
+                                </Select.Content>
+                            </Select.Root>
+                            <InputError message={(form.errors as any)['pendaftaran.jenis_kelamin']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Tempat Lahir <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.pendaftaran.tempat_lahir} required />
+                            <InputError message={(form.errors as any)['pendaftaran.tempat_lahir']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Tanggal Lahir <span class="text-red-500">*</span></Label>
+                            <Input type="date" bind:value={form.pendaftaran.tanggal_lahir} required />
+                            <InputError message={(form.errors as any)['pendaftaran.tanggal_lahir']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Agama <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.pendaftaran.agama} required />
+                            <InputError message={(form.errors as any)['pendaftaran.agama']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Pendidikan Terakhir <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.pendaftaran.pendidikan} required />
+                            <InputError message={(form.errors as any)['pendaftaran.pendidikan']} />
+                        </div>
                         <div class="space-y-2"><Label>Status Perkawinan</Label><Input bind:value={form.pendaftaran.status_perkawinan} /></div>
                         <div class="space-y-2"><Label>Tinggi Badan (cm)</Label><Input bind:value={form.pendaftaran.tinggi_badan} /></div>
                         <div class="space-y-2"><Label>Berat Badan (kg)</Label><Input bind:value={form.pendaftaran.berat_badan} /></div>
                         <div class="space-y-2"><Label>Bentuk / Keadaan Mata</Label><Input bind:value={form.pendaftaran.bentuk_keadaan_mata} /></div>
                         <div class="space-y-2"><Label>Pendengaran</Label><Input bind:value={form.pendaftaran.pendengaran} /></div>
                         <div class="space-y-2"><Label>Golongan Darah</Label><Input bind:value={form.pendaftaran.golongan_darah} /></div>
-                        <div class="col-span-2 space-y-2"><Label>Alamat Lengkap</Label><Textarea bind:value={form.pendaftaran.alamat_asal} /></div>
+                        <div class="col-span-2 space-y-2">
+                            <Label>Alamat Lengkap <span class="text-red-500">*</span></Label>
+                            <Textarea bind:value={form.pendaftaran.alamat_asal} required />
+                            <InputError message={(form.errors as any)['pendaftaran.alamat_asal']} />
+                        </div>
                         
-                        <div class="col-span-2 mt-4"><h3 class="font-semibold border-b pb-2">Informasi Disabilitas</h3></div>
+                        <div class="col-span-2 mt-4"><h3 class="font-semibold border-b pb-2">Informasi Disabilitas (Opsional)</h3></div>
                         <div class="space-y-2"><Label>Disabilitas Netra Sejak</Label><Input bind:value={form.pendaftaran.disabilitas_netra_sejak} /></div>
                         <div class="space-y-2"><Label>Penyebab Disabilitas</Label><Input bind:value={form.pendaftaran.penyebab_disabilitas} /></div>
                         <div class="space-y-2"><Label>Tempat Cacat (Bagian Tubuh)</Label><Input bind:value={form.pendaftaran.tempat_cacat} /></div>
@@ -261,12 +323,31 @@
                 </Card>
 
                 <Card>
-                    <CardHeader><CardTitle>Identitas Wali / Penanggung Jawab</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>Identitas Wali / Penanggung Jawab</CardTitle>
+                        <CardDescription>Kolom dengan tanda <span class="text-red-500">*</span> wajib diisi.</CardDescription>
+                    </CardHeader>
                     <CardContent class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2"><Label>Nama Lengkap</Label><Input bind:value={form.wali.nama} /></div>
-                        <div class="space-y-2"><Label>Nomor HP</Label><Input bind:value={form.wali.nomor_hp} /></div>
-                        <div class="space-y-2"><Label>Tempat Lahir</Label><Input bind:value={form.wali.tempat_lahir} /></div>
-                        <div class="space-y-2"><Label>Tanggal Lahir</Label><Input type="date" bind:value={form.wali.tanggal_lahir} /></div>
+                        <div class="space-y-2">
+                            <Label>Nama Lengkap <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.wali.nama} required />
+                            <InputError message={(form.errors as any)['wali.nama']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Nomor HP <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.wali.nomor_hp} required />
+                            <InputError message={(form.errors as any)['wali.nomor_hp']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Tempat Lahir <span class="text-red-500">*</span></Label>
+                            <Input bind:value={form.wali.tempat_lahir} required />
+                            <InputError message={(form.errors as any)['wali.tempat_lahir']} />
+                        </div>
+                        <div class="space-y-2">
+                            <Label>Tanggal Lahir <span class="text-red-500">*</span></Label>
+                            <Input type="date" bind:value={form.wali.tanggal_lahir} required />
+                            <InputError message={(form.errors as any)['wali.tanggal_lahir']} />
+                        </div>
                         <div class="space-y-2"><Label>Agama</Label><Input bind:value={form.wali.agama} /></div>
                         <div class="space-y-2"><Label>Pendidikan Terakhir</Label><Input bind:value={form.wali.pendidikan_terakhir} /></div>
                         <div class="space-y-2"><Label>Pekerjaan</Label><Input bind:value={form.wali.pekerjaan} /></div>
@@ -275,14 +356,18 @@
                         <div class="space-y-2"><Label>Tanggungan Keluarga (orang)</Label><Input type="number" bind:value={form.wali.tanggungan_keluarga} /></div>
                         <div class="space-y-2"><Label>Rumah Tempat Tinggal</Label><Input bind:value={form.wali.rumah_tempat_tinggal} placeholder="Milik Sendiri/Sewa/Numpang" /></div>
                         <div class="space-y-2"><Label>Keadaan Lingkungan</Label><Input bind:value={form.wali.keadaan_lingkungan} /></div>
-                        <div class="col-span-2 space-y-2"><Label>Alamat Lengkap</Label><Textarea bind:value={form.wali.alamat} /></div>
+                        <div class="col-span-2 space-y-2">
+                            <Label>Alamat Lengkap <span class="text-red-500">*</span></Label>
+                            <Textarea bind:value={form.wali.alamat} required />
+                            <InputError message={(form.errors as any)['wali.alamat']} />
+                        </div>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Susunan Anggota Keluarga</CardTitle>
-                        <CardDescription>Tambahkan semua anggota keluarga yang tinggal dalam satu rumah tangga.</CardDescription>
+                        <CardTitle>Susunan Anggota Keluarga (Opsional)</CardTitle>
+                        <CardDescription>Tambahkan anggota keluarga yang tinggal dalam satu rumah tangga (jika ada).</CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         {#each form.anggota_keluarga as ak, i}
@@ -515,10 +600,6 @@
                                     <Checkbox checked={form.tujuan_bimbingan_keterampilan} onCheckedChange={(v) => form.tujuan_bimbingan_keterampilan = !!v} />
                                     Bimbingan Keterampilan
                                 </label>
-                                <label class="flex items-center gap-2">
-                                    <Checkbox checked={form.tujuan_bimbingan_sekolah} onCheckedChange={(v) => form.tujuan_bimbingan_sekolah = !!v} />
-                                    Bimbingan Sekolah
-                                </label>
                             </div>
                         </div>
 
@@ -562,14 +643,14 @@
                 </Button>
                 
                 {#if currentStep < totalSteps}
-                    <Button type="button" onclick={() => currentStep++}>
+                    <Button type="button" variant="secondary" onclick={() => currentStep++}>
                         Selanjutnya &rarr;
                     </Button>
-                {:else}
-                    <Button type="button" onclick={() => submit('selesai')} disabled={form.processing}>
-                        Selesaikan Asesmen
-                    </Button>
                 {/if}
+
+                <Button type="button" onclick={() => submit('selesai')} disabled={form.processing}>
+                    Selesaikan Asesmen
+                </Button>
             </div>
         </div>
     </form>

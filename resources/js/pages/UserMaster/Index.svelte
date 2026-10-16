@@ -22,6 +22,7 @@
     import AppHead from "@/components/AppHead.svelte";
     import * as DropdownMenu from "@/components/ui/dropdown-menu";
     import { MoreVertical, Edit, Trash2 } from "@lucide/svelte";
+    import DataTable from "@/components/DataTable.svelte";
 
     let { users, roles, filters } = $props();
 
@@ -29,23 +30,20 @@
     let search = $state(untrack(() => filters.search || ""));
     let sortField = $state(untrack(() => filters.sortField || "id"));
     let sortDirection = $state(untrack(() => filters.sortDirection || "desc"));
-    let searchTimeout: ReturnType<typeof setTimeout>;
+    let perPage = $state(untrack(() => filters.perPage || "10"));
 
     function applyFilters() {
         router.get(
             "/user-master",
-            { search, sortField, sortDirection },
+            { search, sortField, sortDirection, perPage },
             { preserveState: true, preserveScroll: true, replace: true },
         );
     }
 
-    function handleSearch(e: Event) {
-        const value = (e.target as HTMLInputElement).value;
-        search = value;
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            applyFilters();
-        }, 500); // Debounce 500ms
+    function handleFilterChange(newFilters: { search: string; perPage: string }) {
+        search = newFilters.search;
+        perPage = newFilters.perPage;
+        applyFilters();
     }
 
     function handleSort(field: string) {
@@ -116,138 +114,89 @@
 <AppHead title="User Master" />
 
 <div class="p-6 w-full">
-    <div class="mb-4 flex items-center justify-between">
-        <div class="w-full max-w-sm">
-            <Input
-                type="search"
-                placeholder="Cari nama atau email..."
-                value={search}
-                oninput={handleSearch}
-            />
-        </div>
+    <DataTable
+        data={users}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        searchPlaceholder="Cari nama atau email..."
+        columnsCount={5}
+    >
         <Button onclick={openCreateDialog}>Tambah User</Button>
-    </div>
 
-    <div class="rounded-md border bg-card">
-        <Table.Root>
-            <Table.Header>
-                <Table.Row>
-                    <Table.Head
-                        class="cursor-pointer select-none"
-                        onclick={() => handleSort("id")}
-                    >
-                        ID {sortField === "id"
-                            ? sortDirection === "asc"
-                                ? "↑"
-                                : "↓"
-                            : ""}
-                    </Table.Head>
-                    <Table.Head
-                        class="cursor-pointer select-none"
-                        onclick={() => handleSort("name")}
-                    >
-                        Nama {sortField === "name"
-                            ? sortDirection === "asc"
-                                ? "↑"
-                                : "↓"
-                            : ""}
-                    </Table.Head>
-                    <Table.Head
-                        class="cursor-pointer select-none"
-                        onclick={() => handleSort("email")}
-                    >
-                        Email {sortField === "email"
-                            ? sortDirection === "asc"
-                                ? "↑"
-                                : "↓"
-                            : ""}
-                    </Table.Head>
-                    <Table.Head>Role</Table.Head>
-                    <Table.Head class="text-right">Aksi</Table.Head>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>
-                {#each users.data as user (user.id)}
-                    <Table.Row>
-                        <Table.Cell class="font-medium">{user.id}</Table.Cell>
-                        <Table.Cell>{user.name}</Table.Cell>
-                        <Table.Cell>{user.email}</Table.Cell>
-                        <Table.Cell>
-                            {#if user.roles && user.roles.length > 0}
-                                {#each user.roles as role}
-                                    <Badge variant="secondary" class="mr-1"
-                                        >{role.name}</Badge
-                                    >
-                                {/each}
-                            {:else}
-                                <span class="text-muted-foreground text-sm"
-                                    >-</span
-                                >
-                            {/if}
-                        </Table.Cell>
-                        <Table.Cell class="text-right">
-                            <DropdownMenu.Root>
-                                <DropdownMenu.Trigger>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreVertical class="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenu.Trigger>
-                                <DropdownMenu.Content align="end">
-                                    <DropdownMenu.Item
-                                        onclick={() => openEditDialog(user)}
-                                    >
-                                        <Edit class="mr-2 h-4 w-4" />
-                                        Edit
-                                    </DropdownMenu.Item>
-                                    <DropdownMenu.Item
-                                        class="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                        onclick={() => deleteUser(user)}
-                                    >
-                                        <Trash2 class="mr-2 h-4 w-4" />
-                                        Hapus
-                                    </DropdownMenu.Item>
-                                </DropdownMenu.Content>
-                            </DropdownMenu.Root>
-                        </Table.Cell>
-                    </Table.Row>
+        {#snippet header()}
+            <Table.Head
+                class="cursor-pointer select-none"
+                onclick={() => handleSort("id")}
+            >
+                ID {sortField === "id"
+                    ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                    : ""}
+            </Table.Head>
+            <Table.Head
+                class="cursor-pointer select-none"
+                onclick={() => handleSort("name")}
+            >
+                Nama {sortField === "name"
+                    ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                    : ""}
+            </Table.Head>
+            <Table.Head
+                class="cursor-pointer select-none"
+                onclick={() => handleSort("email")}
+            >
+                Email {sortField === "email"
+                    ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                    : ""}
+            </Table.Head>
+            <Table.Head>Role</Table.Head>
+            <Table.Head class="text-right">Aksi</Table.Head>
+        {/snippet}
+
+        {#snippet row(user)}
+            <Table.Cell class="font-medium">{user.id}</Table.Cell>
+            <Table.Cell>{user.name}</Table.Cell>
+            <Table.Cell>{user.email}</Table.Cell>
+            <Table.Cell>
+                {#if user.roles && user.roles.length > 0}
+                    {#each user.roles as role}
+                        <Badge variant="secondary" class="mr-1">{role.name}</Badge>
+                    {/each}
                 {:else}
-                    <Table.Row>
-                        <Table.Cell colspan={5} class="h-24 text-center">
-                            Tidak ada data.
-                        </Table.Cell>
-                    </Table.Row>
-                {/each}
-            </Table.Body>
-        </Table.Root>
-    </div>
-
-    <div class="mt-4 flex items-center justify-between">
-        <div class="text-sm text-muted-foreground">
-            Menampilkan {users.from || 0} hingga {users.to || 0} dari total {users.total}
-            data.
-        </div>
-        <div class="flex items-center gap-1">
-            {#each users.links as link}
-                <!-- eslint-disable-next-line svelte/valid-compile -->
-                <Button
-                    variant={link.active ? "default" : "outline"}
-                    size="sm"
-                    disabled={!link.url}
-                    class={!link.url ? "opacity-50 cursor-not-allowed" : ""}
-                    onclick={() => {
-                        if (link.url)
-                            router.get(
-                                link.url,
-                                { search, sortField, sortDirection },
-                                { preserveState: true },
-                            );
-                    }}
-                >
-                    {@html link.label}
-                </Button>
-            {/each}
-        </div>
-    </div>
+                    <span class="text-muted-foreground text-sm">-</span>
+                {/if}
+            </Table.Cell>
+            <Table.Cell class="text-right">
+                <DropdownMenu.Root>
+                    <DropdownMenu.Trigger>
+                        <Button variant="ghost" size="icon">
+                            <MoreVertical class="h-4 w-4" />
+                        </Button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content align="end">
+                        <DropdownMenu.Item
+                            onclick={() => openEditDialog(user)}
+                        >
+                            <Edit class="mr-2 h-4 w-4" />
+                            Edit
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                            class="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                            onclick={() => deleteUser(user)}
+                        >
+                            <Trash2 class="mr-2 h-4 w-4" />
+                            Hapus
+                        </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                </DropdownMenu.Root>
+            </Table.Cell>
+        {/snippet}
+    </DataTable>
 </div>
 
 <Dialog.Root bind:open={isDialogOpen}>

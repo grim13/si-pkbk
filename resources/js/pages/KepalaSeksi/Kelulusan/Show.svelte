@@ -248,7 +248,6 @@
             "Maksud & Tujuan",
             checkedLabels([
                 { key: "tujuan_bimbingan_keterampilan", label: "Bimbingan Keterampilan" },
-                { key: "tujuan_bimbingan_sekolah", label: "Bimbingan Sekolah" },
             ]),
         ],
         [

@@ -26,13 +26,14 @@ class UserMasterController extends Controller
             $query->orderBy('id', 'desc');
         }
 
-        $users = $query->paginate(10)->withQueryString();
+        $perPage = $request->input('perPage', 10);
+        $users = $query->paginate($perPage)->withQueryString();
         $roles = Role::select('id', 'name')->get();
 
         return Inertia::render('UserMaster/Index', [
             'users' => $users,
             'roles' => $roles,
-            'filters' => $request->only(['search', 'sortField', 'sortDirection']),
+            'filters' => $request->only(['search', 'sortField', 'sortDirection', 'perPage']),
         ]);
     }
 

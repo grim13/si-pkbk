@@ -197,6 +197,23 @@
                     </div>
                 </div>
             </CardContent>
+        {:else if pendaftaran.status_pendaftaran === "selesai_asesmen"}
+            <CardHeader>
+                <CardTitle class="text-center text-amber-600 text-2xl mb-2"
+                    >Asesmen Selesai</CardTitle
+                >
+            </CardHeader>
+            <CardContent class="text-center">
+                <p class="mb-4">
+                    Tahap asesmen untuk peserta atas nama <strong
+                        >{pendaftaran.nama}</strong
+                    >
+                    telah selesai dilaksanakan.
+                </p>
+                <p class="text-muted-foreground">
+                    Saat ini pendaftaran sedang menunggu keputusan kelulusan dari Kepala Seksi.
+                </p>
+            </CardContent>
         {:else if pendaftaran.status_pendaftaran === "diterima"}
             <CardHeader>
                 <CardTitle class="text-center text-green-600 text-2xl mb-2"

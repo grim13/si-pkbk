@@ -31,6 +31,23 @@ class Asesmen extends Model
         'sikap_keluarga',
         'sikap_masyarakat',
         'keluhan_hambatan',
+        // Masalah Setelah Kelahiran
+        'bayi_kuning',
+        'bayi_kuning_penanganan',
+        'bayi_kuning_uv_hari',
+        'bayi_hisap_asi',
+        'lama_asi_bulan',
+        'lama_asi_lainnya',
+        'masalah_kejang_stuip',
+        'masalah_kejang_stuip_ket',
+        'masalah_diare',
+        'masalah_diare_ket',
+        'masalah_lainnya',
+        'masalah_lainnya_ket',
+        // Riwayat Perkembangan Masa Balita
+        'hal_hal_menyolok',
+        'catatan_tambahan_balita',
+        'pendapat_sekolah',
         // Lain-lain
         'tujuan_bimbingan_keterampilan',
         'tujuan_bimbingan_sekolah',
@@ -50,6 +67,12 @@ class Asesmen extends Model
 
     protected $casts = [
         'tanggal_asesmen' => 'date',
+        'bayi_kuning' => 'boolean',
+        'bayi_hisap_asi' => 'boolean',
+        'masalah_kejang_stuip' => 'boolean',
+        'masalah_diare' => 'boolean',
+        'masalah_lainnya' => 'boolean',
+        'hal_hal_menyolok' => 'array',
         'tujuan_bimbingan_keterampilan' => 'boolean',
         'tujuan_bimbingan_sekolah' => 'boolean',
         'keterampilan_praktis_produktif' => 'boolean',

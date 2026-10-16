@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class PendaftaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $wali = auth()->user()->wali;
         if (! $wali) {
@@ -20,12 +20,28 @@ class PendaftaranController extends Controller
 
         $persyaratan = PersyaratanAdministrasi::orderBy('id', 'asc')->get();
         $jenis_berkas = JenisBerkasPendaftaran::orderBy('id', 'asc')->get();
-        $pendaftaran = PendaftaranPeserta::with('berkas')->where('wali_id', $wali->id)->latest()->first();
+        $pendaftaranList = PendaftaranPeserta::with('berkas')
+            ->where('wali_id', $wali->id)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $isCreatingNew = $request->boolean('baru');
+
+        if ($isCreatingNew) {
+            $pendaftaran = null;
+        } elseif ($request->filled('pendaftaran_id')) {
+            $pendaftaran = $pendaftaranList->firstWhere('id', (int) $request->pendaftaran_id);
+        } else {
+            $pendaftaran = $pendaftaranList->first();
+        }
 
         return Inertia::render('Pendaftaran/Index', [
             'persyaratan' => $persyaratan,
             'jenis_berkas' => $jenis_berkas,
             'pendaftaran' => $pendaftaran,
+            'pendaftaran_list' => $pendaftaranList,
+            'is_creating_new' => $isCreatingNew,
         ]);
     }
 
@@ -34,6 +50,7 @@ class PendaftaranController extends Controller
         $wali = auth()->user()->wali;
 
         $validated = $request->validate([
+            'pendaftaran_id' => 'nullable|integer',
             'nik' => 'required|string',
             'nama' => 'required|string',
             'tempat_lahir' => 'required|string',
@@ -46,30 +63,39 @@ class PendaftaranController extends Controller
             'tanggal_lahir.after' => 'Umur peserta maksimal 35 tahun.',
         ]);
 
-        $existing = PendaftaranPeserta::where('wali_id', $wali->id)->first();
-        if ($existing && $existing->status_pendaftaran !== 'draft') {
-            return redirect()->back()->withErrors(['error' => 'Anda sudah memiliki pendaftaran yang sedang diproses. Tidak dapat membuat pendaftaran baru.']);
+        $pendaftaranId = $validated['pendaftaran_id'] ?? null;
+        unset($validated['pendaftaran_id']);
+
+        if ($pendaftaranId) {
+            $draft = PendaftaranPeserta::where('wali_id', $wali->id)
+                ->where('id', $pendaftaranId)
+                ->where('status_pendaftaran', 'draft')
+                ->firstOrFail();
+
+            $draft->update($validated);
+        } else {
+            $draft = PendaftaranPeserta::create(array_merge($validated, [
+                'wali_id' => $wali->id,
+                'no_pendaftaran' => $this->generateNoPendaftaran(),
+                'status_pendaftaran' => 'draft',
+            ]));
         }
 
-        $draft = PendaftaranPeserta::updateOrCreate(
-            [
-                'wali_id' => $wali->id,
-            ],
-            array_merge($validated, [
-                'no_pendaftaran' => $existing?->no_pendaftaran ?? 'REG-'.time().'-'.rand(100, 999),
-                'status_pendaftaran' => 'draft',
-            ])
-        );
-
-        return redirect()->back()->with('success', 'Data klien berhasil disimpan.');
+        return redirect()->route('pendaftaran.index', ['pendaftaran_id' => $draft->id])
+            ->with('success', 'Data klien berhasil disimpan.');
     }
 
     public function uploadBerkas(Request $request)
     {
         $wali = auth()->user()->wali;
-        $draft = PendaftaranPeserta::where('wali_id', $wali->id)
-            ->whereIn('status_pendaftaran', ['draft', 'perbaikan_berkas'])
-            ->firstOrFail();
+        $query = PendaftaranPeserta::where('wali_id', $wali->id)
+            ->whereIn('status_pendaftaran', ['draft', 'perbaikan_berkas']);
+
+        if ($request->filled('pendaftaran_id')) {
+            $query->where('id', $request->pendaftaran_id);
+        }
+
+        $draft = $query->latest('id')->firstOrFail();
 
         $request->validate([
             'berkas' => 'required|array',
@@ -91,15 +117,21 @@ class PendaftaranController extends Controller
             );
         }
 
-        return redirect()->back()->with('success', 'Berkas berhasil diupload.');
+        return redirect()->route('pendaftaran.index', ['pendaftaran_id' => $draft->id])
+            ->with('success', 'Berkas berhasil diupload.');
     }
 
     public function finalize(Request $request)
     {
         $wali = auth()->user()->wali;
-        $draft = PendaftaranPeserta::where('wali_id', $wali->id)
-            ->whereIn('status_pendaftaran', ['draft', 'perbaikan_berkas'])
-            ->firstOrFail();
+        $query = PendaftaranPeserta::where('wali_id', $wali->id)
+            ->whereIn('status_pendaftaran', ['draft', 'perbaikan_berkas']);
+
+        if ($request->filled('pendaftaran_id')) {
+            $query->where('id', $request->pendaftaran_id);
+        }
+
+        $draft = $query->latest('id')->firstOrFail();
 
         $requiredBerkas = JenisBerkasPendaftaran::where('required', true)->pluck('id');
         $uploadedBerkas = $draft->berkas()->pluck('jenis_berkas_pendaftaran_id');
@@ -113,6 +145,19 @@ class PendaftaranController extends Controller
             'status_pendaftaran' => 'verifikasi_berkas',
         ]);
 
-        return redirect()->back()->with('success', 'Pendaftaran berhasil difinalisasi.');
+        return redirect()->route('pendaftaran.index', ['pendaftaran_id' => $draft->id])
+            ->with('success', 'Pendaftaran berhasil difinalisasi.');
+    }
+
+    private function generateNoPendaftaran(): string
+    {
+        $nextNumber = PendaftaranPeserta::count() + 1;
+
+        do {
+            $noPendaftaran = str_pad((string) $nextNumber, 2, '0', STR_PAD_LEFT);
+            $nextNumber++;
+        } while (PendaftaranPeserta::where('no_pendaftaran', $noPendaftaran)->exists());
+
+        return $noPendaftaran;
     }
 }
