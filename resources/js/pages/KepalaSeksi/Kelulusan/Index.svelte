@@ -127,9 +127,11 @@
                 <TableRow>
                     <TableHead>No. Pendaftaran</TableHead>
                     <TableHead>Nama Klien</TableHead>
+                    <TableHead>Jenis Disabilitas</TableHead>
                     <TableHead>Wali</TableHead>
                     <TableHead>Keterampilan Diminati</TableHead>
                     <TableHead>Tgl. Asesmen</TableHead>
+                    <TableHead>Tgl. Diterima</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead class="text-right">Aksi</TableHead>
                 </TableRow>
@@ -137,7 +139,7 @@
             <TableBody>
                 {#if filteredPeserta.length === 0}
                     <TableRow>
-                        <TableCell colspan={7} class="text-center h-24">
+                        <TableCell colspan={9} class="text-center h-24">
                             Tidak ada data peserta.
                         </TableCell>
                     </TableRow>
@@ -148,10 +150,14 @@
                                 >{item.no_pendaftaran}</TableCell
                             >
                             <TableCell>{item.nama}</TableCell>
+                            <TableCell>{item.jenis_disabilitas?.nama || "-"}</TableCell>
                             <TableCell>{item.wali?.user?.name || "-"}</TableCell>
                             <TableCell>{item.keterampilan_yang_diminati}</TableCell>
                             <TableCell
                                 >{formatDate(item.asesmen?.tanggal_asesmen)}</TableCell
+                            >
+                            <TableCell
+                                >{formatDate(item.tanggal_mulai_diterima)}</TableCell
                             >
                             <TableCell>
                                 <span

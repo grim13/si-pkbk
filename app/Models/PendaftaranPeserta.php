@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PendaftaranPeserta extends Model
 {
@@ -10,6 +11,7 @@ class PendaftaranPeserta extends Model
 
     protected $fillable = [
         'wali_id',
+        'jenis_disabilitas_id',
         'nik',
         'no_pendaftaran',
         'nama',
@@ -19,6 +21,7 @@ class PendaftaranPeserta extends Model
         'pendidikan',
         'keterampilan_yang_diminati',
         'status_pendaftaran',
+        'tanggal_mulai_diterima',
         'catatan_verifikasi',
         'jadwal_asesmen',
         'tempat_asesmen',
@@ -42,11 +45,17 @@ class PendaftaranPeserta extends Model
 
     protected $casts = [
         'jadwal_asesmen' => 'datetime',
+        'tanggal_mulai_diterima' => 'datetime',
     ];
 
     public function wali()
     {
         return $this->belongsTo(Wali::class);
+    }
+
+    public function jenisDisabilitas(): BelongsTo
+    {
+        return $this->belongsTo(JenisDisabilitas::class, 'jenis_disabilitas_id');
     }
 
     public function berkas()
@@ -57,5 +66,10 @@ class PendaftaranPeserta extends Model
     public function asesmen()
     {
         return $this->hasOne(Asesmen::class);
+    }
+
+    public function pertemuanPembelajaranPeserta()
+    {
+        return $this->hasMany(PertemuanPembelajaranPeserta::class, 'pendaftaran_peserta_id');
     }
 }

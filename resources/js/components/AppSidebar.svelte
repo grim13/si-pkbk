@@ -8,6 +8,8 @@
     import Contact from '@lucide/svelte/icons/contact';
     import FileText from '@lucide/svelte/icons/file-text';
     import GraduationCap from '@lucide/svelte/icons/graduation-cap';
+    import Calendar from '@lucide/svelte/icons/calendar';
+    import ClipboardCheck from '@lucide/svelte/icons/clipboard-check';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -79,13 +81,40 @@
         },
     ];
 
-    const pekerjaSosialItems: NavItem[] = [
-        {
-            title: 'Asesmen Klien',
-            href: '/pekerja-sosial/asesmen',
-            icon: FileText,
-        },
-    ];
+    const pekerjaSosialItems = $derived<NavItem[]>([
+        ...(user?.permissions?.includes('asesmen.do')
+            ? [
+                  {
+                      title: 'Asesmen Klien',
+                      href: '/pekerja-sosial/asesmen',
+                      icon: FileText,
+                  },
+              ]
+            : []),
+        ...(user?.permissions?.includes('pembelajaran.approve') ||
+        user?.roles?.includes('pekerja_sosial')
+            ? [
+                  {
+                      title: 'Approval Pembelajaran',
+                      href: '/pekerja-sosial/pembelajaran',
+                      icon: ClipboardCheck,
+                  },
+              ]
+            : []),
+    ]);
+
+    const instrukturItems = $derived<NavItem[]>(
+        user?.permissions?.includes('pembelajaran.do') ||
+            user?.roles?.includes('instruktur')
+            ? [
+                  {
+                      title: 'Proses Pembelajaran',
+                      href: '/instruktur/pembelajaran',
+                      icon: BookOpen,
+                  },
+              ]
+            : [],
+    );
 
     const kepalaSeksiItems: NavItem[] = [
         {
@@ -94,6 +123,27 @@
             icon: GraduationCap,
         },
     ];
+
+    const pembelajaranItems = $derived<NavItem[]>([
+        ...(user?.permissions?.includes('mata_pelajaran.manage')
+            ? [
+                  {
+                      title: 'Mata Pelajaran',
+                      href: '/mata-pelajaran',
+                      icon: BookOpen,
+                  },
+              ]
+            : []),
+        ...(user?.permissions?.includes('jadwal.manage')
+            ? [
+                  {
+                      title: 'Jadwal Pembelajaran',
+                      href: '/jadwal',
+                      icon: Calendar,
+                  },
+              ]
+            : []),
+    ]);
 
     const footerNavItems: NavItem[] = [
         {
@@ -137,10 +187,16 @@
         {#if user?.permissions?.includes('wali.manage')}
             <NavMain items={masterItems} label="Master" />
         {/if}
+        {#if pembelajaranItems.length > 0}
+            <NavMain items={pembelajaranItems} label="Pembelajaran" />
+        {/if}
         {#if user?.roles?.includes('wali')}
             <NavMain items={waliItems} label="Menu Wali" />
         {/if}
-        {#if user?.permissions?.includes('asesmen.do')}
+        {#if instrukturItems.length > 0}
+            <NavMain items={instrukturItems} label="Instruktur" />
+        {/if}
+        {#if pekerjaSosialItems.length > 0}
             <NavMain items={pekerjaSosialItems} label="Pekerja Sosial" />
         {/if}
         {#if user?.permissions?.includes('pendaftaran.kelulusan')}

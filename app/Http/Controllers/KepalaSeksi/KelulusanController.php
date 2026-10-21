@@ -20,7 +20,7 @@ class KelulusanController extends Controller
      */
     public function index()
     {
-        $peserta = PendaftaranPeserta::with(['wali.user', 'asesmen:id,pendaftaran_peserta_id,tanggal_asesmen,status'])
+        $peserta = PendaftaranPeserta::with(['wali.user', 'jenisDisabilitas', 'asesmen:id,pendaftaran_peserta_id,tanggal_asesmen,status'])
             ->whereIn('status_pendaftaran', self::STATUS_LIST)
             ->orderByRaw("CASE WHEN status_pendaftaran = 'selesai_asesmen' THEN 0 ELSE 1 END")
             ->orderBy('updated_at', 'desc')
@@ -36,7 +36,7 @@ class KelulusanController extends Controller
      */
     public function show(PendaftaranPeserta $pendaftaran)
     {
-        if (!in_array($pendaftaran->status_pendaftaran, self::STATUS_LIST)) {
+        if (! in_array($pendaftaran->status_pendaftaran, self::STATUS_LIST)) {
             return redirect()->route('kepala-seksi.kelulusan.index')
                 ->with('error', 'Peserta belum menyelesaikan tahap asesmen.');
         }
@@ -44,6 +44,7 @@ class KelulusanController extends Controller
         $pendaftaran->load([
             'wali.user',
             'wali.anggotaKeluarga',
+            'jenisDisabilitas',
             'berkas.jenisBerkasPendaftaran',
             'asesmen.jawaban',
             'asesmen.pekerja:id,name',
@@ -66,11 +67,14 @@ class KelulusanController extends Controller
             'keputusan' => 'required|in:diterima,ditolak',
         ]);
 
-        if (!in_array($pendaftaran->status_pendaftaran, self::STATUS_LIST)) {
+        if (! in_array($pendaftaran->status_pendaftaran, self::STATUS_LIST)) {
             return back()->with('error', 'Peserta belum menyelesaikan tahap asesmen.');
         }
 
-        $pendaftaran->update(['status_pendaftaran' => $validated['keputusan']]);
+        $pendaftaran->update([
+            'status_pendaftaran' => $validated['keputusan'],
+            'tanggal_mulai_diterima' => $validated['keputusan'] === 'diterima' ? now() : null,
+        ]);
 
         $label = $validated['keputusan'] === 'diterima' ? 'DITERIMA' : 'DITOLAK';
 

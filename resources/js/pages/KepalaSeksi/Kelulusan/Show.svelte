@@ -152,6 +152,7 @@
     ]);
 
     const kondisiFisik = $derived([
+        ["Jenis Disabilitas", pendaftaran.jenis_disabilitas?.nama],
         [
             "Tinggi Badan",
             pendaftaran.tinggi_badan ? `${pendaftaran.tinggi_badan} cm` : null,
@@ -447,11 +448,15 @@
             </Card>
 
             {@render section(
-                "Verifikasi & Jadwal Asesmen",
+                "Verifikasi, Asesmen & Kelulusan",
                 [
                     ["Jadwal Asesmen", formatDate(pendaftaran.jadwal_asesmen, true)],
                     ["Tempat Asesmen", pendaftaran.tempat_asesmen],
                     ["Catatan Verifikasi", pendaftaran.catatan_verifikasi],
+                    [
+                        "Tanggal Mulai Diterima",
+                        formatDate(pendaftaran.tanggal_mulai_diterima, true),
+                    ],
                 ],
                 1,
             )}

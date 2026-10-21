@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PekerjaSosial;
 use App\Http\Controllers\Controller;
 use App\Models\Asesmen;
 use App\Models\AsesmenSeksi;
+use App\Models\JenisDisabilitas;
 use App\Models\PendaftaranPeserta;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,13 +17,13 @@ class AsesmenController extends Controller
      */
     public function index()
     {
-        $peserta = PendaftaranPeserta::with('wali')
+        $peserta = PendaftaranPeserta::with(['wali', 'jenisDisabilitas'])
             ->whereIn('status_pendaftaran', ['asesmen', 'selesai_asesmen', 'diterima', 'ditolak'])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return Inertia::render('PekerjaSosial/Asesmen/Index', [
-            'peserta' => $peserta
+            'peserta' => $peserta,
         ]);
     }
 
@@ -32,24 +33,26 @@ class AsesmenController extends Controller
     public function show(PendaftaranPeserta $pendaftaran)
     {
         // Pastikan pendaftaran sudah di tahap asesmen atau lebih
-        if (!in_array($pendaftaran->status_pendaftaran, ['asesmen', 'selesai_asesmen', 'diterima', 'ditolak'])) {
+        if (! in_array($pendaftaran->status_pendaftaran, ['asesmen', 'selesai_asesmen', 'diterima', 'ditolak'])) {
             return redirect()->route('pekerja-sosial.asesmen.index')->with('error', 'Peserta belum masuk tahap asesmen.');
         }
 
-        $pendaftaran->load(['wali.user', 'wali.anggotaKeluarga']);
+        $pendaftaran->load(['wali.user', 'wali.anggotaKeluarga', 'jenisDisabilitas']);
 
         // Ambil data asesmen jika sudah ada, atau buat instance kosong (tanpa save)
         $asesmen = $pendaftaran->asesmen()->with('jawaban')->first();
-        if (!$asesmen) {
-            $asesmen = new Asesmen();
+        if (! $asesmen) {
+            $asesmen = new Asesmen;
         }
 
         $seksi = AsesmenSeksi::with('pertanyaan')->orderBy('urutan')->get();
+        $jenisDisabilitasList = JenisDisabilitas::orderBy('id')->get();
 
         return Inertia::render('PekerjaSosial/Asesmen/Form', [
             'pendaftaran' => $pendaftaran,
             'asesmen' => $asesmen,
-            'seksiMaster' => $seksi
+            'seksiMaster' => $seksi,
+            'jenisDisabilitasList' => $jenisDisabilitasList,
         ]);
     }
 
@@ -68,6 +71,7 @@ class AsesmenController extends Controller
             'pendaftaran.agama' => 'required|string',
             'pendaftaran.pendidikan' => 'required|string',
             'pendaftaran.alamat_asal' => 'required|string',
+            'pendaftaran.jenis_disabilitas_id' => 'required|exists:jenis_disabilitas,id',
             'wali.nama' => 'required|string',
             'wali.nomor_hp' => 'required|string',
             'wali.tempat_lahir' => 'required|string',
@@ -83,6 +87,8 @@ class AsesmenController extends Controller
             'pendaftaran.agama.required' => 'Agama klien wajib diisi.',
             'pendaftaran.pendidikan.required' => 'Pendidikan terakhir klien wajib diisi.',
             'pendaftaran.alamat_asal.required' => 'Alamat lengkap klien wajib diisi.',
+            'pendaftaran.jenis_disabilitas_id.required' => 'Jenis disabilitas klien wajib dipilih.',
+            'pendaftaran.jenis_disabilitas_id.exists' => 'Jenis disabilitas yang dipilih tidak valid.',
             'wali.nama.required' => 'Nama lengkap wali wajib diisi.',
             'wali.nomor_hp.required' => 'Nomor HP wali wajib diisi.',
             'wali.tempat_lahir.required' => 'Tempat lahir wali wajib diisi.',

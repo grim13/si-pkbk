@@ -45,5 +45,16 @@ class AdminUserSeeder extends Seeder
         );
 
         $kepala_seksi->assignRole('kepala_seksi');
+
+        $instruktur = User::updateOrCreate(
+            ['email' => 'instruktur@sipkbk.com'],
+            [
+                'name' => 'Instruktur',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $instruktur->assignRole('instruktur');
     }
 }

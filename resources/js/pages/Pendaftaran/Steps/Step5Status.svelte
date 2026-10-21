@@ -225,6 +225,13 @@
                     Peserta atas nama <strong>{pendaftaran.nama}</strong> telah
                     <strong>Lolos dan Diterima</strong> sebagai Klien Panti.
                 </p>
+                {#if pendaftaran.tanggal_mulai_diterima}
+                    <p class="mb-4 text-sm font-medium text-green-700">
+                        Tanggal Mulai Diterima: {formatDate(
+                            pendaftaran.tanggal_mulai_diterima,
+                        )}
+                    </p>
+                {/if}
                 <p class="text-muted-foreground">
                     Silakan menunggu arahan lebih lanjut atau hubungi pihak
                     panti terkait jadwal kedatangan dan asrama.

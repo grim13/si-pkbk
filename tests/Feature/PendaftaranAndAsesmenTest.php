@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\JenisDisabilitas;
 use App\Models\PendaftaranPeserta;
 use App\Models\User;
 use App\Models\Wali;
@@ -127,6 +128,7 @@ test('form asesmen mewajibkan data diri dan mengizinkan bagian kuesioner/asesmen
         'pendaftaran.agama',
         'pendaftaran.pendidikan',
         'pendaftaran.alamat_asal',
+        'pendaftaran.jenis_disabilitas_id',
         'wali.nama',
         'wali.nomor_hp',
         'wali.tempat_lahir',
@@ -134,7 +136,9 @@ test('form asesmen mewajibkan data diri dan mengizinkan bagian kuesioner/asesmen
         'wali.alamat',
     ]);
 
-    // Berhasil jika data diri wajib diisi sedangkan seluruh bagian kuesioner/asesmen lainnya dikosongkan
+    $jenisDisabilitas = JenisDisabilitas::factory()->tunaRungu()->create();
+
+    // Berhasil jika data diri wajib (termasuk jenis_disabilitas_id) diisi sedangkan seluruh bagian kuesioner/asesmen lainnya dikosongkan
     $validResponse = $this->post(route('pekerja-sosial.asesmen.store', $pendaftaran->id), [
         'status' => 'selesai',
         'pendaftaran' => [
@@ -146,6 +150,7 @@ test('form asesmen mewajibkan data diri dan mengizinkan bagian kuesioner/asesmen
             'agama' => 'Islam',
             'pendidikan' => 'SMP',
             'alamat_asal' => 'Jl. Klien No. 1',
+            'jenis_disabilitas_id' => $jenisDisabilitas->id,
             'tinggi_badan' => '',
             'berat_badan' => '',
         ],
@@ -170,6 +175,59 @@ test('form asesmen mewajibkan data diri dan mengizinkan bagian kuesioner/asesmen
     expect($pendaftaran->status_pendaftaran)->toBe('selesai_asesmen')
         ->and($pendaftaran->jenis_kelamin)->toBe('Laki-laki')
         ->and($pendaftaran->agama)->toBe('Islam')
+        ->and($pendaftaran->jenis_disabilitas_id)->toBe($jenisDisabilitas->id)
         ->and($pendaftaran->asesmen)->not->toBeNull()
         ->and($pendaftaran->asesmen->tujuan_bimbingan_sekolah)->toBeFalse();
+});
+
+test('kepala seksi mencatat tanggal_mulai_diterima saat menyetujui peserta dan mengosongkannya saat ditolak', function () {
+    $kepalaSeksi = User::factory()->create();
+    $kepalaSeksi->assignRole('kepala_seksi');
+
+    $waliUser = User::factory()->create();
+    $waliUser->assignRole('wali');
+
+    $wali = Wali::create([
+        'user_id' => $waliUser->id,
+        'nik' => '1234567890123456',
+        'alamat' => 'Jl. Contoh No. 1',
+        'tempat_lahir' => 'Palembang',
+        'tanggal_lahir' => '1980-01-01',
+        'nomor_hp' => '081234567890',
+    ]);
+
+    $pendaftaran = PendaftaranPeserta::create([
+        'wali_id' => $wali->id,
+        'nik' => '6371010000000001',
+        'no_pendaftaran' => '01',
+        'nama' => 'Klien Kelulusan',
+        'tempat_lahir' => 'Palembang',
+        'tanggal_lahir' => '2010-05-10',
+        'alamat_asal' => 'Jl. Klien No. 1',
+        'pendidikan' => 'SMP',
+        'keterampilan_yang_diminati' => 'Massage',
+        'status_pendaftaran' => 'selesai_asesmen',
+    ]);
+
+    $this->actingAs($kepalaSeksi);
+
+    $this->travelTo('2026-10-21 10:30:00');
+
+    $this->post(route('kepala-seksi.kelulusan.update', $pendaftaran->id), [
+        'keputusan' => 'diterima',
+    ])->assertRedirect(route('kepala-seksi.kelulusan.index'));
+
+    $pendaftaran->refresh();
+    expect($pendaftaran->status_pendaftaran)->toBe('diterima')
+        ->and($pendaftaran->tanggal_mulai_diterima)->not->toBeNull()
+        ->and($pendaftaran->tanggal_mulai_diterima->format('Y-m-d H:i:s'))->toBe('2026-10-21 10:30:00');
+
+    // Jika keputusan diubah menjadi ditolak, tanggal_mulai_diterima dikosongkan kembali
+    $this->post(route('kepala-seksi.kelulusan.update', $pendaftaran->id), [
+        'keputusan' => 'ditolak',
+    ])->assertRedirect(route('kepala-seksi.kelulusan.index'));
+
+    $pendaftaran->refresh();
+    expect($pendaftaran->status_pendaftaran)->toBe('ditolak')
+        ->and($pendaftaran->tanggal_mulai_diterima)->toBeNull();
 });

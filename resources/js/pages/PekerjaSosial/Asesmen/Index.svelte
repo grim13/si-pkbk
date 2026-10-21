@@ -60,6 +60,7 @@
                 <TableRow>
                     <TableHead>No. Pendaftaran</TableHead>
                     <TableHead>Nama Klien</TableHead>
+                    <TableHead>Jenis Disabilitas</TableHead>
                     <TableHead>Tanggal Lahir</TableHead>
                     <TableHead>Pendidikan</TableHead>
                     <TableHead>Status</TableHead>
@@ -69,7 +70,7 @@
             <TableBody>
                 {#if filteredPeserta.length === 0}
                     <TableRow>
-                        <TableCell colspan="6" class="text-center h-24">
+                        <TableCell colspan="7" class="text-center h-24">
                             Tidak ada data peserta untuk asesmen.
                         </TableCell>
                     </TableRow>
@@ -78,6 +79,7 @@
                         <TableRow>
                             <TableCell class="font-medium">{item.no_pendaftaran}</TableCell>
                             <TableCell>{item.nama}</TableCell>
+                            <TableCell>{item.jenis_disabilitas?.nama || "-"}</TableCell>
                             <TableCell>{item.tanggal_lahir}</TableCell>
                             <TableCell>{item.pendidikan}</TableCell>
                             <TableCell>

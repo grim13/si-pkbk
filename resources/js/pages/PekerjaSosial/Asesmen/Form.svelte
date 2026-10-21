@@ -27,7 +27,7 @@
     import Trash2 from '@lucide/svelte/icons/trash-2';
     import Plus from '@lucide/svelte/icons/plus';
 
-    let { pendaftaran, asesmen, seksiMaster } = $props();
+    let { pendaftaran, asesmen, seksiMaster, jenisDisabilitasList = [] } = $props();
 
     let currentStep = $state(1);
     const totalSteps = 4;
@@ -69,6 +69,7 @@
                 pendengaran: pendaftaran.pendengaran || "",
                 golongan_darah: pendaftaran.golongan_darah || "",
                 nomor_induk_klien: pendaftaran.nomor_induk_klien || "",
+                jenis_disabilitas_id: pendaftaran.jenis_disabilitas_id ? String(pendaftaran.jenis_disabilitas_id) : "",
                 disabilitas_netra_sejak: pendaftaran.disabilitas_netra_sejak || "",
                 penyebab_disabilitas: pendaftaran.penyebab_disabilitas || "",
                 tempat_cacat: pendaftaran.tempat_cacat || "",
@@ -312,7 +313,27 @@
                             <InputError message={(form.errors as any)['pendaftaran.alamat_asal']} />
                         </div>
                         
-                        <div class="col-span-2 mt-4"><h3 class="font-semibold border-b pb-2">Informasi Disabilitas (Opsional)</h3></div>
+                        <div class="col-span-2 mt-4"><h3 class="font-semibold border-b pb-2">Informasi Disabilitas</h3></div>
+                        <div class="space-y-2">
+                            <Label>Jenis Disabilitas <span class="text-red-500">*</span></Label>
+                            <Select.Root
+                                type="single"
+                                value={form.pendaftaran.jenis_disabilitas_id ? String(form.pendaftaran.jenis_disabilitas_id) : ""}
+                                onValueChange={(val) => {
+                                    form.pendaftaran.jenis_disabilitas_id = val;
+                                }}
+                            >
+                                <Select.Trigger class="w-full">
+                                    {jenisDisabilitasList?.find((jd: any) => String(jd.id) === String(form.pendaftaran.jenis_disabilitas_id))?.nama || "Pilih Jenis Disabilitas"}
+                                </Select.Trigger>
+                                <Select.Content>
+                                    {#each jenisDisabilitasList as jd (jd.id)}
+                                        <Select.Item value={String(jd.id)} label={jd.nama}>{jd.nama}</Select.Item>
+                                    {/each}
+                                </Select.Content>
+                            </Select.Root>
+                            <InputError message={(form.errors as any)['pendaftaran.jenis_disabilitas_id']} />
+                        </div>
                         <div class="space-y-2"><Label>Disabilitas Netra Sejak</Label><Input bind:value={form.pendaftaran.disabilitas_netra_sejak} /></div>
                         <div class="space-y-2"><Label>Penyebab Disabilitas</Label><Input bind:value={form.pendaftaran.penyebab_disabilitas} /></div>
                         <div class="space-y-2"><Label>Tempat Cacat (Bagian Tubuh)</Label><Input bind:value={form.pendaftaran.tempat_cacat} /></div>

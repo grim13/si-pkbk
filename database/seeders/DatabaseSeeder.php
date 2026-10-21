@@ -19,8 +19,10 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             PersyaratanAdministrasiSeeder::class,
             JenisBerkasPendaftaranSeeder::class,
+            JenisDisabilitasSeeder::class,
+            MataPelajaranSeeder::class,
+            JadwalSeeder::class,
             AsesmenSeksiPertanyaanSeeder::class,
         ]);
     }
 }
-
