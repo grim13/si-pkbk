@@ -16,50 +16,226 @@
 
 ---
 
-## 2. Aktor Pengguna & Matriks Hak Akses (RBAC)
+## 2. Spesifikasi Hak Akses per Role (RBAC & Matriks Otorisasi)
 
-Sistem menerapkan kontrol akses berbasis peran (*Role-Based Access Control*) menggunakan paket `spatie/laravel-permission` dengan **5 peran utama**:
+Sistem menerapkan kontrol akses berbasis peran (*Role-Based Access Control*) menggunakan paket `spatie/laravel-permission` dan *middleware* otorisasi Laravel. Berikut adalah rincian lengkap hak akses untuk masing-masing dari **5 Role**:
 
-| Role | kode Role | Permission (`spatie/permission`) | Tanggung Jawab Utama |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `administrator` | `access.manage`, `wali.manage`, `pendaftaran.manage`, `mata_pelajaran.manage`, `jadwal.manage`, `galeri.manage` | Mengelola pengguna & role, data wali, mata pelajaran, jadwal kelas, memverifikasi berkas pendaftaran peserta, menjadwalkan asesmen, serta mengelola galeri dokumentasi foto pembelajaran. |
-| **Wali Peserta** | `wali` | `pendaftaran.form` | Mendaftarkan calon peserta (anak/klien), mengunggah & memperbaiki berkas persyaratan, memantau status tahapan pendaftaran, melihat rekap kehadiran/evaluasi anak, serta melihat galeri foto kegiatan pembelajaran di mana anak hadir. |
-| **Pekerja Sosial** | `pekerja_sosial` | `asesmen.do`, `pembelajaran.approve` | Melaksanakan asesmen komprehensif terhadap calon peserta & keluarganya, serta memverifikasi laporan pertemuan pembelajaran yang diajukan Instruktur (`perbaikan` atau `acc`). |
-| **Instruktur** | `instruktur` | `pembelajaran.do` | Mengelola pertemuan pembelajaran pada jadwal kelas yang diampu, mencatat presensi (`hadir`, `izin`, `absen`) dan nilai kualitatif peserta (`sangat_baik`, `baik`, `cukup`, `kurang`), serta mengajukan laporan pertemuan ke Pekerja Sosial. |
-| **Kepala Seksi** | `kepala_seksi` | `pendaftaran.kelulusan` | Meninjau hasil asesmen Pekerja Sosial untuk memutuskan kelulusan peserta (`diterima` / `ditolak`), serta memantau seluruh laporan pertemuan pembelajaran yang telah di-ACC beserta galeri dokumentasinya. |
+### 2.1 Rincian Hak Akses Tiap Role
+
+#### A. Administrator (`role: administrator`)
+- **Permissions**: `access.manage`, `wali.manage`, `pendaftaran.manage`, `mata_pelajaran.manage`, `jadwal.manage`, `galeri.manage`
+- **Hak Akses & Kewenangan**:
+  1. **Dashboard (`/dashboard`)**: Melihat ringkasan statistik sistem (total akun, wali, pendaftar menunggu verifikasi/perbaikan, peserta diterima, jadwal, pertemuan ACC, dan galeri) beserta daftar pendaftaran terbaru dan galeri terbaru.
+  2. **User Master (`/user-master`)**: **Create, Read, Update, Delete (CRUD)** seluruh akun pengguna sistem dan menetapkan role pengguna.
+  3. **Role Master (`/role-master`)**: **CRUD** role dan mengatur daftar *permission* yang melekat pada setiap role.
+  4. **Wali Master (`/wali-master`)**: **Read, Update, Delete** data profil orang tua / wali peserta.
+  5. **Mata Pelajaran (`/mata-pelajaran`)**: **CRUD** mata pelajaran dan memetakan relasi jenis disabilitas (`Tuna Wicara`, `Tuna Rungu`, `Tuna Netra`) untuk tiap mata pelajaran.
+  6. **Jadwal Pembelajaran (`/jadwal` & `/jadwal/cetak`)**: **CRUD** jadwal kelas (tahun, hari, jam, ruangan, mata pelajaran, instruktur pengampu) serta mencetak jadwal pembelajaran.
+  7. **Verifikasi Pendaftaran (`/admin/pendaftaran` & `/admin/pendaftaran/{pendaftaran}`)**: **Read & Verify** seluruh pendaftaran peserta non-draft, memeriksa tiap dokumen berkas (`diterima` / `perbaikan`), meminta revisi berkas (`perbaikan_berkas`), atau menyetujui berkas ke tahap `asesmen` sekaligus menetapkan jadwal & tempat asesmen.
+  8. **Galeri Pembelajaran (`/admin/galeri` & `/admin/galeri/{galeri}`)**: **CRUD** album galeri yang terhubung ke pertemuan pembelajaran instruktur, mengunggah banyak foto sekaligus (*multiple upload*), menambah/menghapus foto individual pada galeri.
+- **Batasan Akses**:
+  - Tidak melakukan pengisian form asesmen klinis/sosial peserta (wewenang Pekerja Sosial).
+  - Tidak menentukan kelulusan akhir peserta pasca-asesmen (wewenang Kepala Seksi).
+  - Tidak menginput presensi/nilai pertemuan kelas atau meng-ACC laporan pertemuan pembelajaran.
+
+#### B. Wali Peserta (`role: wali`)
+- **Permissions**: `pendaftaran.form`
+- **Hak Akses & Kewenangan**:
+  1. **Registrasi Mandiri (`/register`)**: Membuat akun wali beserta identitas dasar wali.
+  2. **Dashboard (`/dashboard`)**: Melihat ringkasan anak/peserta yang didaftarkan, status tahapan pendaftaran, jadwal asesmen, catatan revisi berkas, riwayat kehadiran & evaluasi belajar anak pada pertemuan yang telah di-ACC, serta pratinjau galeri kegiatan anak.
+  3. **Pendaftaran Peserta (`/pendaftaran`)**:
+     - **Create & Update** data pendaftaran calon peserta (anak/klien) selama berstatus `draft` (mendukung pendaftaran lebih dari 1 anak).
+     - **Upload & Re-upload** 14 dokumen berkas persyaratan (dan mengunduh *template* surat `.docx`) saat status `draft` maupun saat diminta revisi (`perbaikan_berkas`).
+     - **Submit / Finalize** pendaftaran untuk diverifikasi oleh Administrator (`menunggu_verifikasi`).
+     - **Read** progres status pendaftaran dari tahap verifikasi, jadwal asesmen, hingga keputusan kelulusan (`diterima` / `ditolak`).
+  4. **Galeri Pembelajaran (`/galeri` & `/galeri/{galeri}`)**:
+     - **Read (Terbatas / Conditional Access)**: Hanya dapat melihat daftar dan detail galeri foto dari pertemuan pembelajaran di mana anak/peserta milik wali tersebut **terdaftar aktif (`status_pendaftaran = 'diterima'`)** pada jenis disabilitas kelas tersebut **DAN tercatat hadir (`presensi = 'hadir'`)** pada pertemuan itu.
+- **Batasan Akses**:
+  - Tidak dapat melihat data peserta milik wali lain.
+  - Tidak dapat mengubah data pendaftaran yang sudah difinalisasi kecuali mengunggah ulang berkas yang berstatus `perbaikan` saat `status_pendaftaran = 'perbaikan_berkas'`.
+  - Ditolak (`403 Forbidden`) melihat galeri foto pertemuan apabila anaknya berstatus `izin`, `absen`, atau tidak terdaftar di kelas tersebut.
+
+#### C. Pekerja Sosial (`role: pekerja_sosial`)
+- **Permissions**: `asesmen.do`, `pembelajaran.approve`
+- **Hak Akses & Kewenangan**:
+  1. **Dashboard (`/dashboard`)**: Melihat statistik antrean klien yang menunggu asesmen, asesmen selesai, pertemuan pembelajaran yang menunggu *approval*, dan pertemuan yang telah di-ACC.
+  2. **Asesmen Klien (`/pekerja-sosial/asesmen` & `/pekerja-sosial/asesmen/{pendaftaran}`)**:
+     - **Read** daftar peserta yang telah lolos verifikasi berkas (`status_pendaftaran` dalam `['asesmen', 'selesai_asesmen', 'diterima', 'ditolak']`).
+     - **Create & Update** data asesmen komprehensif: melengkapi identitas fisik & disabilitas klien, memperbarui data sosial-ekonomi wali, mengelola tabel dinamis susunan anggota keluarga (`anggota_keluarga`), mengisi riwayat pendidikan & sikap emosional, mengisi 85 butir instrumen pertanyaan terstruktur (`asesmen_jawaban`), serta menyusun kesimpulan & rekomendasi bantuan.
+     - **Finalize Asesmen**: Menyimpan asesmen sebagai `draft` atau `selesai` (yang otomatis mengubah status peserta menjadi `selesai_asesmen` agar dapat diputuskan kelulusannya oleh Kepala Seksi).
+  3. **Approval Pembelajaran (`/pekerja-sosial/pembelajaran` & `/pekerja-sosial/pembelajaran/{pertemuan}`)**:
+     - **Read** seluruh laporan pertemuan pembelajaran yang diajukan Instruktur (`pengajuan`, `perbaikan`, `acc`) beserta daftar presensi dan nilai kualitatif peserta.
+     - **Approve / Reject (`POST /pekerja-sosial/pembelajaran/{pertemuan}`)**: Memberikan keputusan **Disetujui (`acc`)** atau **Minta Perbaikan (`perbaikan`)** disertai `catatan_pekerja_sosial`.
+- **Batasan Akses**:
+  - Tidak dapat memproses asesmen peserta yang masih berstatus `draft`, `menunggu_verifikasi`, atau `perbaikan_berkas`.
+  - Tidak dapat memverifikasi pertemuan pembelajaran yang masih berstatus `draft` (belum diajukan oleh Instruktur).
+  - Tidak dapat memutuskan kelulusan akhir penerimaan peserta (wewenang Kepala Seksi).
+
+#### D. Instruktur (`role: instruktur`)
+- **Permissions**: `pembelajaran.do`
+- **Hak Akses & Kewenangan**:
+  1. **Dashboard (`/dashboard`)**: Melihat ringkasan jadwal kelas yang diampu sendiri, jumlah pertemuan yang perlu tindakan (`draft` / `perbaikan`), menunggu verifikasi, dan telah di-ACC, beserta daftar kelas dan riwayat pertemuan terbaru.
+  2. **Proses Pembelajaran (`/instruktur/pembelajaran` & `/instruktur/pembelajaran/jadwal/{jadwal}`)**:
+     - **Read** daftar jadwal kelas yang ditugaskan khusus kepada instruktur yang sedang login (`jadwal.instruktur_id = auth()->id()`).
+     - **Create & Update** pertemuan pembelajaran (`tanggal`, `keterangan` materi) beserta input **Presensi** (`hadir`, `izin`, `absen`), **Nilai Kualitatif** (`sangat_baik`, `baik`, `cukup`, `kurang`), dan **Keterangan Evaluasi** untuk setiap peserta aktif di kelas tersebut selama status pertemuan masih `draft` atau `perbaikan`.
+     - **Submit / Ajukan (`POST /instruktur/pembelajaran/{pertemuan}/ajukan`)**: Mengajukan laporan pertemuan pembelajaran ke Pekerja Sosial (`status = 'pengajuan'`).
+- **Batasan Akses**:
+  - Ditolak (`403 Forbidden`) mengakses atau mengelola jadwal kelas milik instruktur lain.
+  - Tidak dapat mengubah data pertemuan, presensi, maupun nilai peserta apabila status pertemuan sedang `pengajuan` atau sudah `acc`.
+  - Tidak dapat mengakses modul pendaftaran, asesmen, kelulusan, maupun manajemen master.
+
+#### E. Kepala Seksi (`role: kepala_seksi`)
+- **Permissions**: `pendaftaran.kelulusan`
+- **Hak Akses & Kewenangan**:
+  1. **Dashboard (`/dashboard`)**: Melihat statistik peserta yang menunggu keputusan kelulusan, peserta diterima & ditolak, total pertemuan pembelajaran berstatus ACC, serta total album & foto galeri dokumentasi.
+  2. **Penentuan Kelulusan (`/kepala-seksi/kelulusan` & `/kepala-seksi/kelulusan/{pendaftaran}`)**:
+     - **Read** daftar peserta yang telah selesai asesmen (`selesai_asesmen`, `diterima`, `ditolak`) beserta seluruh rincian hasil asesmen Pekerja Sosial, profil keluarga, dan dokumen klien.
+     - **Decide (`POST /kepala-seksi/kelulusan/{pendaftaran}`)**: Menetapkan keputusan akhir kelulusan peserta menjadi **Diterima (`diterima`)** (yang otomatis mencatat `tanggal_mulai_diterima`) atau **Ditolak (`ditolak`)**.
+  3. **Data Pembelajaran ACC & Galeri (`/kepala-seksi/pembelajaran` & `/kepala-seksi/pembelajaran/{pertemuan}`)**:
+     - **Read** seluruh pertemuan pembelajaran yang telah disetujui (**ACC**) oleh Pekerja Sosial (`status = 'acc'`).
+     - **Read** detail lengkap pertemuan pembelajaran meliputi informasi jadwal & instruktur, catatan verifikasi Pekerja Sosial, tabel rekapitulasi presensi & nilai kualitatif seluruh peserta, serta seluruh album **Galeri Foto Pembelajaran** yang terhubung (dilengkapi pratinjau *lightbox* dan unduh foto).
+- **Batasan Akses**:
+  - Tidak dapat menetapkan kelulusan pada peserta yang belum menyelesaikan tahap asesmen (`status_pendaftaran != 'selesai_asesmen'`).
+  - Ditolak (`403 Forbidden`) melihat detail pertemuan pembelajaran yang belum di-ACC oleh Pekerja Sosial (`draft`, `pengajuan`, atau `perbaikan`).
+  - Bersifat *monitoring & decision maker* pada pembelajaran/galeri (tidak mengubah presensi nilai instruktur dan tidak menghapus galeri admin).
 
 ---
 
-## 3. Alur Proses Bisnis End-to-End
+### 2.2 Tabel Matriks Hak Akses Lintas Modul (CRUD & Action Matrix)
 
-### 3.1 Diagram Alur Proses Bisnis Utama
+Keterangan simbol:
+- **C** = Create / Tambah | **R** = Read / Lihat | **U** = Update / Ubah | **D** = Delete / Hapus
+- **V** = Verify / Approve | **S** = Submit / Ajukan | **P** = Print / Download
+- **—** = Tidak Memiliki Akses (`403 Forbidden`)
+
+| No | Modul / Fitur Sistem | Rute Utama | Administrator | Wali Peserta | Pekerja Sosial | Instruktur | Kepala Seksi |
+| :-: | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Dashboard Spesifik Role** | `/dashboard` | **R** (Statistik Sistem) | **R** (Data Anak & Galeri) | **R** (Antrean Asesmen & Approval) | **R** (Jadwal & Pertemuan) | **R** (Kelulusan & Pembelajaran ACC) |
+| 2 | **User Master** | `/user-master` | **C, R, U, D** | — | — | — | — |
+| 3 | **Role & Permission Master** | `/role-master` | **C, R, U, D** | — | — | — | — |
+| 4 | **Wali Master** | `/wali-master` | **R, U, D** | — | **U** (Saat Asesmen) | — | **R** (Saat Kelulusan) |
+| 5 | **Mata Pelajaran & Disabilitas** | `/mata-pelajaran` | **C, R, U, D** | — | — | **R** (Di Jadwal) | **R** (Di Laporan) |
+| 6 | **Jadwal Pembelajaran & Cetak** | `/jadwal`, `/jadwal/cetak` | **C, R, U, D, P** | — | — | **R** (Milik Sendiri) | **R** (Di Laporan) |
+| 7 | **Form Pendaftaran & Upload Berkas** | `/pendaftaran` | — | **C, R, U, S** (Milik Sendiri) | — | — | — |
+| 8 | **Verifikasi Berkas & Jadwal Asesmen** | `/admin/pendaftaran` | **R, U, V** (ACC / Revisi) | **R** (Status & Catatan) | — | — | — |
+| 9 | **Asesmen Klien & Keluarga** | `/pekerja-sosial/asesmen` | — | — | **C, R, U, S** | — | **R** (Tinjauan Lengkap) |
+| 10 | **Penentuan Kelulusan Peserta** | `/kepala-seksi/kelulusan` | — | **R** (Hasil Kelulusan) | **R** (Status Akhir) | — | **R, V** (Terima / Tolak) |
+| 11 | **Input Pertemuan, Presensi & Nilai** | `/instruktur/pembelajaran` | — | **R** (Riwayat Anak di Dashboard) | **R** (Saat Approval) | **C, R, U, S** (Kelas Sendiri) | **R** (Hanya yang ACC) |
+| 12 | **Approval Pertemuan Pembelajaran** | `/pekerja-sosial/pembelajaran` | — | — | **R, V** (ACC / Perbaikan) | **R** (Status & Catatan Peksos) | **R** (Info Verifikator) |
+| 13 | **Manajemen Galeri Foto (Admin)** | `/admin/galeri` | **C, R, U, D** (Multiple Foto) | — | — | — | — |
+| 14 | **Galeri Foto untuk Wali** | `/galeri` | — | **R, P** (Hanya Kelas di mana Anak Hadir) | — | — | — |
+| 15 | **Data Pembelajaran ACC & Galeri** | `/kepala-seksi/pembelajaran` | — | — | — | — | **R, P** (Semua Pertemuan ACC & Galeri) |
+| 16 | **Pengaturan Profil, Password, 2FA, Passkey** | `/settings/*` | **R, U** (Akun Sendiri) | **R, U** (Akun Sendiri) | **R, U** (Akun Sendiri) | **R, U** (Akun Sendiri) | **R, U** (Akun Sendiri) |
+
+---
+
+## 3. Alur Proses Bisnis dengan Swimlane per Role
+
+### 3.1 Swimlane Flowchart 1: Alur Pendaftaran, Verifikasi Berkas, Asesmen & Kelulusan Peserta
+
+Diagram berikut menggambarkan pembagian tanggung jawab (*swimlane*) antar-role mulai dari pendaftaran calon peserta oleh **Wali**, pemeriksaan berkas oleh **Administrator**, pelaksanaan asesmen oleh **Pekerja Sosial**, hingga penetapan kelulusan oleh **Kepala Seksi**:
 
 ```mermaid
 flowchart TD
-    A["Wali Registrasi Akun & Login"] --> B["Wali Mengisi Form Pendaftaran Klien (Draft)"]
-    B --> C["Wali Mengunggah 14 Berkas Persyaratan & Finalisasi"]
-    C --> D{"Verifikasi Berkas oleh Administrator"}
-    D -- "Berkas Perlu Revisi" --> E["Status: perbaikan_berkas (Wali Unggah Ulang Berkas)"]
-    E --> D
-    D -- "Berkas Lengkap & Valid (ACC)" --> F["Status: asesmen + Penetapan Jadwal & Tempat Asesmen"]
-    F --> G["Pekerja Sosial Melaksanakan Asesmen Komprehensif"]
-    G --> H["Status: selesai_asesmen"]
-    H --> I{"Keputusan Kelulusan oleh Kepala Seksi"}
-    I -- "Ditolak" --> J["Status: ditolak"]
-    I -- "Diterima / Lulus" --> K["Status: diterima + Tercatat tanggal_mulai_diterima"]
-    K --> L["Peserta Masuk ke Kelas Sesuai Jenis Disabilitas pada Jadwal Pembelajaran"]
-    L --> M["Instruktur Mencatat Pertemuan, Presensi & Nilai Kualitatif Peserta"]
-    M --> N["Instruktur Mengajukan Laporan Pertemuan (Status: pengajuan)"]
-    N --> O{"Verifikasi Pembelajaran oleh Pekerja Sosial"}
-    O -- "Perlu Revisi" --> P["Status: perbaikan + Catatan Pekerja Sosial"]
-    P --> M
-    O -- "Disetujui (ACC)" --> Q["Status: acc"]
-    Q --> R["Admin Mengunggah Multiple Foto ke Galeri Pertemuan"]
-    Q --> S["Kepala Seksi Memantau Data Pembelajaran ACC & Galeri Foto"]
-    R --> T["Wali (Anak Terdaftar & Hadir) Melihat Galeri Foto Kegiatan"]
+    subgraph WALI["Swimlane: Wali Peserta (role: wali)"]
+        W1["1. Registrasi Akun Wali & Login"]
+        W2["2. Isi Form Identitas Calon Peserta (Status: draft)"]
+        W3["3. Unggah 14 Dokumen Berkas Persyaratan"]
+        W4["4. Finalisasi & Kirim Pendaftaran"]
+        W5["5. Perbaiki & Unggah Ulang Berkas yang Ditolak"]
+        W6["6. Pantau Jadwal Asesmen & Hasil Kelulusan di Dashboard"]
+    end
+
+    subgraph ADMIN["Swimlane: Administrator (role: administrator)"]
+        A1["7. Periksa Data Klien & 14 Dokumen Berkas"]
+        A2{"8. Apakah Seluruh Berkas Valid?"}
+        A3["9. Tandai Berkas 'perbaikan' & Beri Catatan Verifikasi (Status: perbaikan_berkas)"]
+        A4["10. Setujui Berkas (ACC) & Tetapkan Jadwal + Tempat Asesmen (Status: asesmen)"]
+    end
+
+    subgraph PEKSOS["Swimlane: Pekerja Sosial (role: pekerja_sosial)"]
+        P1["11. Laksanakan Asesmen Klien & Wawancara Keluarga"]
+        P2["12. Lengkapi Identitas Fisik, Klasifikasi Jenis Disabilitas & Susunan Keluarga"]
+        P3["13. Isi 85 Butir Pertanyaan Asesmen & Kesimpulan Rekomendasi"]
+        P4["14. Finalisasi Asesmen (Status: selesai_asesmen)"]
+    end
+
+    subgraph KASI["Swimlane: Kepala Seksi (role: kepala_seksi)"]
+        K1["15. Tinjau Hasil Asesmen Lengkap, Profil Keluarga & Rekomendasi Peksos"]
+        K2{"16. Keputusan Kelulusan"}
+        K3["17a. Nyatakan DITERIMA (Status: diterima + Catat tanggal_mulai_diterima)"]
+        K4["17b. Nyatakan DITOLAK (Status: ditolak)"]
+    end
+
+    W1 --> W2 --> W3 --> W4 --> A1
+    A1 --> A2
+    A2 -- "Perlu Revisi Berkas" --> A3 --> W5
+    W5 --> W4
+    A2 -- "Berkas Lengkap (ACC)" --> A4 --> P1
+    P1 --> P2 --> P3 --> P4 --> K1
+    K1 --> K2
+    K2 -- "Lulus Seleksi" --> K3 --> W6
+    K2 -- "Tidak Lulus" --> K4 --> W6
 ```
 
-### 3.2 Siklus Status Pendaftaran Peserta (`status_pendaftaran`)
+---
+
+### 3.2 Swimlane Flowchart 2: Alur Penjadwalan, Proses Pembelajaran, Approval & Galeri Dokumentasi
+
+Diagram berikut menggambarkan pembagian tanggung jawab (*swimlane*) setelah peserta dinyatakan **Diterima (`diterima`)**, mulai dari pengaturan jadwal oleh **Administrator**, pencatatan pertemuan oleh **Instruktur**, verifikasi oleh **Pekerja Sosial**, pemantauan oleh **Kepala Seksi**, hingga akses galeri oleh **Wali**:
+
+```mermaid
+flowchart TD
+    subgraph ADMIN2["Swimlane: Administrator (role: administrator)"]
+        AD1["1. Kelola Master Mata Pelajaran & Pemetaan Jenis Disabilitas"]
+        AD2["2. Susun Jadwal Kelas Pembelajaran & Tugaskan Instruktur"]
+        AD3["3. Buat Album Galeri & Unggah Multiple Foto Dokumentasi Pertemuan"]
+    end
+
+    subgraph INSTRUKTUR["Swimlane: Instruktur (role: instruktur)"]
+        I1["4. Buka Jadwal Kelas yang Diampu"]
+        I2["5. Buat Pertemuan Baru (Sistem Memuat Peserta Aktif Sesuai Disabilitas)"]
+        I3["6. Catat Materi, Presensi (Hadir/Izin/Absen) & Nilai Kualitatif Peserta"]
+        I4["7. Simpan Draft atau Perbaiki Laporan Pertemuan"]
+        I5["8. Ajukan Laporan Pertemuan ke Pekerja Sosial (Status: pengajuan)"]
+    end
+
+    subgraph PEKSOS2["Swimlane: Pekerja Sosial (role: pekerja_sosial)"]
+        PS1["9. Tinjau Laporan Pertemuan, Rekap Presensi & Nilai Kualitatif Peserta"]
+        PS2{"10. Keputusan Verifikasi Pembelajaran"}
+        PS3["11a. Minta Revisi beserta Catatan (Status: perbaikan)"]
+        PS4["11b. Setujui Laporan Pertemuan / ACC (Status: acc + Catat approved_at)"]
+    end
+
+    subgraph KASI2["Swimlane: Kepala Seksi (role: kepala_seksi)"]
+        KS1["12. Lihat Daftar Seluruh Pertemuan yang Sudah Di-ACC"]
+        KS2["13. Tinjau Detail Pembelajaran, Evaluasi Peserta & Galeri Foto Dokumentasi"]
+    end
+
+    subgraph WALI2["Swimlane: Wali Peserta (role: wali)"]
+        WL1{"14. Cek Apakah Anak Terdaftar di Kelas & Presensi = HADIR?"}
+        WL2["15a. Dapat Melihat & Mengunduh Foto Galeri Pertemuan Kelas"]
+        WL3["15b. Galeri Tidak Ditampilkan / Akses Ditolak (403 Forbidden)"]
+    end
+
+    AD1 --> AD2 --> I1
+    I1 --> I2 --> I3 --> I4 --> I5 --> PS1
+    PS1 --> PS2
+    PS2 -- "Perlu Perbaikan" --> PS3 --> I4
+    PS2 -- "Disetujui (ACC)" --> PS4
+    PS4 --> AD3
+    PS4 --> KS1 --> KS2
+    AD3 --> KS2
+    AD3 --> WL1
+    WL1 -- "Ya (Terdaftar & Hadir)" --> WL2
+    WL1 -- "Tidak (Izin / Absen / Beda Kelas)" --> WL3
+```
+
+---
+
+### 3.3 Siklus Status Data Utama (*State Diagrams*)
+
+#### A. Siklus Status Pendaftaran Peserta (`pendaftaran_peserta.status_pendaftaran`)
 
 ```mermaid
 stateDiagram-v2
@@ -75,7 +251,7 @@ stateDiagram-v2
     ditolak --> [*]
 ```
 
-### 3.3 Siklus Status Pertemuan Pembelajaran (`pertemuan_pembelajaran.status`)
+#### B. Siklus Status Pertemuan Pembelajaran (`pertemuan_pembelajaran.status`)
 
 ```mermaid
 stateDiagram-v2
