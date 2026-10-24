@@ -74,7 +74,7 @@
             </CardContent>
         {:else if pendaftaran.status_pendaftaran === "asesmen"}
             <CardHeader>
-                <CardTitle class="text-center text-indigo-600 text-2xl mb-2"
+                <CardTitle class="text-center text-primary text-2xl mb-2"
                     >Jadwal Asesmen</CardTitle
                 >
             </CardHeader>
@@ -94,18 +94,18 @@
                 </div>
 
                 <div
-                    class="bg-indigo-50 border border-indigo-100 rounded-md p-6 text-center mb-8"
+                    class="bg-primary/10 border border-primary/25 rounded-md p-6 text-center mb-8"
                 >
-                    <h4 class="font-bold text-indigo-800 mb-2">
+                    <h4 class="font-bold text-primary mb-2">
                         Jadwal & Tempat Asesmen
                     </h4>
                     <p class="text-lg font-semibold">
                         {formatDate(pendaftaran.jadwal_asesmen)}
                     </p>
-                    <p class="text-indigo-600 mt-1 font-medium">
+                    <p class="text-primary mt-1 font-medium">
                         {pendaftaran.tempat_asesmen}
                     </p>
-                    <p class="text-danger mt-1 font-medium">
+                    <p class="text-destructive mt-1 font-medium">
                         Bawa semua berkas rangkap 2
                     </p>
                 </div>

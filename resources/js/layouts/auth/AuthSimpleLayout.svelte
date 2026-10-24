@@ -26,10 +26,10 @@
                     class="flex flex-col items-center gap-2 font-medium"
                 >
                     <div
-                        class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
+                        class="mb-1 flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/25 ring-2 ring-sumsel-gold/50"
                     >
                         <AppLogoIcon
-                            class="size-9 fill-current text-(--foreground) dark:text-white"
+                            class="size-6 fill-current"
                         />
                     </div>
                     <span class="sr-only">{title}</span>

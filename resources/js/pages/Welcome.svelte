@@ -159,17 +159,17 @@
     />
 </AppHead>
 
-<div class="landing min-h-screen bg-[#f7f5ef] text-slate-800 dark:bg-[#07110f] dark:text-slate-200">
+<div class="landing min-h-screen bg-[#f5f8f2] text-slate-800 dark:bg-[#08120a] dark:text-slate-200">
     <!-- ================= NAVBAR ================= -->
     <header
         class="fixed inset-x-0 top-0 z-50 transition-all duration-300 {scrolled
-            ? 'border-b border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-[#07110f]/80'
+            ? 'border-b border-[#389838]/15 bg-white/85 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-[#08120a]/85'
             : 'bg-transparent'}"
     >
         <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
             <a href="#top" class="flex items-center gap-2.5">
                 <span
-                    class="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-emerald-500 text-white shadow-lg shadow-teal-600/30"
+                    class="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#237029] to-[#389838] text-white shadow-lg shadow-[#2e8b3c]/30 ring-2 ring-[#d5b01a]/50"
                 >
                     <AppLogoIcon class="size-5 fill-current" />
                 </span>
@@ -181,7 +181,7 @@
                     <li>
                         <a
                             href={l.href}
-                            class="text-slate-600 transition-colors hover:text-teal-700 dark:text-slate-300 dark:hover:text-teal-300"
+                            class="text-slate-600 transition-colors hover:text-[#237029] dark:text-slate-300 dark:hover:text-[#e5c128]"
                             >{l.label}</a
                         >
                     </li>
@@ -199,7 +199,7 @@
                     <Link
                         href={toUrl(login())}
                         id="nav-login"
-                        class="rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-teal-700 dark:text-slate-200"
+                        class="rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-[#237029] dark:text-slate-200 dark:hover:text-[#e5c128]"
                         >Masuk</Link
                     >
                     {#if canRegister}
@@ -222,7 +222,7 @@
 
         {#if mobileOpen}
             <div
-                class="border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xl md:hidden dark:border-white/10 dark:bg-[#07110f]/95"
+                class="border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xl md:hidden dark:border-white/10 dark:bg-[#08120a]/95"
             >
                 <ul class="space-y-3 text-sm font-medium">
                     {#each navLinks as l}
@@ -257,26 +257,26 @@
             <!-- dekorasi -->
             <div class="pointer-events-none absolute inset-0 -z-0">
                 <div
-                    class="blob absolute -top-32 -left-24 size-[28rem] rounded-full bg-teal-300/40 blur-3xl dark:bg-teal-700/30"
+                    class="blob absolute -top-32 -left-24 size-[28rem] rounded-full bg-[#389838]/30 blur-3xl dark:bg-[#389838]/25"
                 ></div>
                 <div
-                    class="blob absolute top-40 -right-24 size-[24rem] rounded-full bg-amber-200/50 blur-3xl [animation-delay:-6s] dark:bg-amber-600/20"
+                    class="blob absolute top-40 -right-24 size-[24rem] rounded-full bg-[#e5c128]/45 blur-3xl [animation-delay:-6s] dark:bg-[#d5b01a]/20"
                 ></div>
                 <div
-                    class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,118,110,0.12)_1px,transparent_0)] [background-size:28px_28px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
+                    class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(46,139,60,0.14)_1px,transparent_0)] [background-size:28px_28px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
                 ></div>
             </div>
 
             <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-6 lg:grid-cols-2">
                 <div use:reveal>
                     <span
-                        class="inline-flex items-center gap-2 rounded-full border border-teal-600/20 bg-white/70 px-3.5 py-1.5 text-xs font-semibold text-teal-800 shadow-sm backdrop-blur dark:border-teal-400/20 dark:bg-white/5 dark:text-teal-300"
+                        class="inline-flex items-center gap-2 rounded-full border border-[#389838]/25 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-[#1e5e24] shadow-sm backdrop-blur dark:border-[#e5c128]/30 dark:bg-white/5 dark:text-[#f0d24c]"
                     >
                         <span class="relative flex size-2">
                             <span
-                                class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75"
+                                class="absolute inline-flex size-full animate-ping rounded-full bg-[#389838] opacity-75"
                             ></span>
-                            <span class="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
+                            <span class="relative inline-flex size-2 rounded-full bg-[#389838]"></span>
                         </span>
                         Pendaftaran klien dibuka secara online
                     </span>
@@ -286,7 +286,7 @@
                     >
                         Bersama Menuju
                         <span
-                            class="bg-gradient-to-r from-teal-600 via-emerald-500 to-amber-500 bg-clip-text text-transparent"
+                            class="bg-gradient-to-r from-[#237029] via-[#389838] to-[#c99e10] bg-clip-text text-transparent dark:from-[#4cc454] dark:via-[#e5c128] dark:to-[#f5d742]"
                             >Kemandirian</span
                         >
                         Penyandang Disabilitas Sensorik
@@ -337,10 +337,10 @@
 
                 <div class="relative" use:reveal={150}>
                     <div
-                        class="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-teal-500/30 via-emerald-400/20 to-amber-300/30 blur-2xl"
+                        class="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[#389838]/35 via-[#2ba882]/20 to-[#d5b01a]/40 blur-2xl"
                     ></div>
                     <div
-                        class="relative overflow-hidden rounded-[2rem] border border-white/60 shadow-2xl shadow-teal-900/20 dark:border-white/10"
+                        class="relative overflow-hidden rounded-[2rem] border-2 border-[#d5b01a]/40 shadow-2xl shadow-[#174d1b]/20 dark:border-[#d5b01a]/30"
                     >
                         <img
                             src="/images/landing-hero.jpg"
@@ -351,9 +351,9 @@
                     </div>
 
                     <div
-                        class="float absolute -bottom-6 -left-4 flex items-center gap-3 rounded-2xl border border-white/70 bg-white/90 p-4 shadow-xl backdrop-blur sm:-left-8 dark:border-white/10 dark:bg-slate-900/90"
+                        class="float absolute -bottom-6 -left-4 flex items-center gap-3 rounded-2xl border border-[#389838]/20 bg-white/95 p-4 shadow-xl backdrop-blur sm:-left-8 dark:border-white/10 dark:bg-slate-900/90"
                     >
-                        <span class="flex size-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                        <span class="flex size-11 items-center justify-center rounded-xl bg-[#e6f5e8] text-[#237029] dark:bg-[#389838]/20 dark:text-[#6ee777]">
                             <CheckCircle2 class="size-6" />
                         </span>
                         <div>
@@ -362,9 +362,9 @@
                         </div>
                     </div>
                     <div
-                        class="float absolute -top-5 -right-3 hidden items-center gap-2 rounded-2xl border border-white/70 bg-white/90 px-4 py-3 shadow-xl backdrop-blur [animation-delay:-3s] sm:flex dark:border-white/10 dark:bg-slate-900/90"
+                        class="float absolute -top-5 -right-3 hidden items-center gap-2 rounded-2xl border border-[#d5b01a]/35 bg-white/95 px-4 py-3 shadow-xl backdrop-blur [animation-delay:-3s] sm:flex dark:border-[#d5b01a]/30 dark:bg-slate-900/90"
                     >
-                        <Sparkles class="size-5 text-amber-500" />
+                        <Sparkles class="size-5 text-[#c99e10]" />
                         <p class="text-sm font-semibold">Program Rehabilitasi Terpadu</p>
                     </div>
                 </div>
@@ -388,13 +388,13 @@
                         {@const Icon = item.icon}
                         <article
                             use:reveal={i * 80}
-                            class="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-500/40 hover:shadow-xl hover:shadow-teal-900/10 dark:border-white/10 dark:bg-white/[0.03]"
+                            class="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#389838]/50 hover:shadow-xl hover:shadow-[#237029]/10 dark:border-white/10 dark:bg-white/[0.03]"
                         >
                             <div
-                                class="absolute -top-16 -right-16 size-40 rounded-full bg-gradient-to-br from-teal-400/0 to-emerald-400/0 transition-all duration-500 group-hover:from-teal-400/20 group-hover:to-emerald-300/10"
+                                class="absolute -top-16 -right-16 size-40 rounded-full bg-gradient-to-br from-[#389838]/0 to-[#d5b01a]/0 transition-all duration-500 group-hover:from-[#389838]/20 group-hover:to-[#d5b01a]/15"
                             ></div>
                             <span
-                                class="relative flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-500 text-white shadow-lg shadow-teal-600/25 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                                class="relative flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#237029] to-[#389838] text-white shadow-lg shadow-[#237029]/25 ring-2 ring-[#d5b01a]/40 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
                             >
                                 <Icon class="size-6" />
                             </span>
@@ -413,40 +413,40 @@
         <!-- ================= ALUR ================= -->
         <section
             id="alur"
-            class="relative scroll-mt-20 overflow-hidden bg-gradient-to-br from-teal-900 via-teal-800 to-emerald-900 py-20 text-white lg:py-28"
+            class="relative scroll-mt-20 overflow-hidden bg-gradient-to-br from-[#164a1a] via-[#216927] to-[#2e8b3c] py-20 text-white lg:py-28"
         >
             <div
-                class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px]"
+                class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.09)_1px,transparent_0)] [background-size:24px_24px]"
             ></div>
             <div class="relative mx-auto max-w-7xl px-6">
                 <div class="mx-auto max-w-2xl text-center" use:reveal>
-                    <p class="text-sm font-bold tracking-widest text-amber-300 uppercase">Alur Pendaftaran</p>
+                    <p class="text-sm font-bold tracking-widest text-[#f5d742] uppercase">Alur Pendaftaran</p>
                     <h2 class="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
                         6 Langkah Mudah Menjadi Klien
                     </h2>
-                    <p class="mt-4 text-teal-100/80">
+                    <p class="mt-4 text-green-100/85">
                         Seluruh proses dapat dipantau langsung melalui akun wali.
                     </p>
                 </div>
 
                 <ol class="relative mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-6 lg:gap-4">
                     <div
-                        class="absolute top-7 right-[8%] left-[8%] hidden h-0.5 bg-gradient-to-r from-amber-300/0 via-amber-300/60 to-amber-300/0 lg:block"
+                        class="absolute top-7 right-[8%] left-[8%] hidden h-0.5 bg-gradient-to-r from-[#f5d742]/0 via-[#f5d742]/70 to-[#f5d742]/0 lg:block"
                     ></div>
                     {#each alur as step, i}
                         {@const Icon = step.icon}
                         <li class="relative flex flex-col items-center text-center" use:reveal={i * 90}>
                             <span
-                                class="relative flex size-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-lg backdrop-blur transition-transform duration-300 hover:scale-110"
+                                class="relative flex size-14 items-center justify-center rounded-2xl border border-[#f5d742]/35 bg-white/10 shadow-lg backdrop-blur transition-transform duration-300 hover:scale-110"
                             >
-                                <Icon class="size-6 text-amber-300" />
+                                <Icon class="size-6 text-[#f5d742]" />
                                 <span
-                                    class="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full bg-amber-400 text-xs font-extrabold text-teal-950"
+                                    class="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full bg-[#e5c128] text-xs font-extrabold text-[#113814] shadow"
                                     >{i + 1}</span
                                 >
                             </span>
                             <h3 class="mt-4 font-bold">{step.title}</h3>
-                            <p class="mt-1 text-sm text-teal-100/75">{step.desc}</p>
+                            <p class="mt-1 text-sm text-green-100/80">{step.desc}</p>
                         </li>
                     {/each}
                 </ol>
@@ -472,7 +472,7 @@
                         class="rounded-3xl border border-slate-200/70 bg-white p-7 shadow-sm lg:col-span-3 dark:border-white/10 dark:bg-white/[0.03]"
                     >
                         <div class="flex items-center gap-3">
-                            <span class="flex size-10 items-center justify-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-[#e6f5e8] text-[#237029] dark:bg-[#389838]/20 dark:text-[#6ee777]">
                                 <BookOpen class="size-5" />
                             </span>
                             <h3 class="text-lg font-bold text-slate-900 dark:text-white">
@@ -485,10 +485,10 @@
                                 {#each persyaratan as item, i}
                                     {@const lines = splitLines(item)}
                                     <li
-                                        class="flex gap-4 rounded-2xl p-3 transition-colors hover:bg-teal-50/70 dark:hover:bg-white/5"
+                                        class="flex gap-4 rounded-2xl p-3 transition-colors hover:bg-[#e6f5e8]/60 dark:hover:bg-white/5"
                                     >
                                         <span
-                                            class="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-600 to-emerald-500 text-xs font-bold text-white"
+                                            class="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#237029] to-[#389838] text-xs font-bold text-white ring-2 ring-[#d5b01a]/40"
                                             >{i + 1}</span
                                         >
                                         <div class="pt-0.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
@@ -515,7 +515,7 @@
                         class="rounded-3xl border border-slate-200/70 bg-white p-7 shadow-sm lg:col-span-2 dark:border-white/10 dark:bg-white/[0.03]"
                     >
                         <div class="flex items-center gap-3">
-                            <span class="flex size-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-[#fdf6d8] text-[#9e7b08] dark:bg-[#d5b01a]/20 dark:text-[#f5d742]">
                                 <FileText class="size-5" />
                             </span>
                             <div>
@@ -535,7 +535,7 @@
                                         <div class="flex items-start gap-3">
                                             <CheckCircle2
                                                 class="mt-0.5 size-4 shrink-0 {b.required
-                                                    ? 'text-emerald-600'
+                                                    ? 'text-[#2e8b3c]'
                                                     : 'text-slate-400'}"
                                             />
                                             <div>
@@ -543,7 +543,7 @@
                                                     {b.nama_berkas}
                                                 </p>
                                                 {#if b.template_surat}
-                                                    <p class="text-xs text-teal-700 dark:text-teal-400">
+                                                    <p class="text-xs text-[#237029] dark:text-[#6ee777]">
                                                         Template tersedia saat pengisian formulir
                                                     </p>
                                                 {/if}
@@ -551,7 +551,7 @@
                                         </div>
                                         <span
                                             class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase {b.required
-                                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300'
+                                                ? 'bg-[#e6f5e8] text-[#1b5920] dark:bg-[#389838]/20 dark:text-[#86efac]'
                                                 : 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-400'}"
                                         >
                                             {b.required ? 'Wajib' : 'Opsional'}
@@ -571,13 +571,13 @@
         <section class="px-6 pb-20 lg:pb-28">
             <div
                 use:reveal
-                class="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-300 p-10 text-center shadow-2xl shadow-amber-900/10 sm:p-14"
+                class="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] border-2 border-[#d5b01a]/50 bg-gradient-to-r from-[#e5c128] via-[#f0d24c] to-[#45a845] p-10 text-center shadow-2xl shadow-[#237029]/15 sm:p-14"
             >
                 <div class="blob pointer-events-none absolute -top-20 -left-10 size-72 rounded-full bg-white/40 blur-3xl"></div>
-                <h2 class="relative text-3xl font-extrabold tracking-tight text-teal-950 sm:text-4xl">
+                <h2 class="relative text-3xl font-extrabold tracking-tight text-[#113814] sm:text-4xl">
                     Siap Mendaftarkan Calon Klien?
                 </h2>
-                <p class="relative mx-auto mt-4 max-w-xl text-teal-900/80">
+                <p class="relative mx-auto mt-4 max-w-xl text-[#174d1b]/90 font-medium">
                     Buat akun wali, lengkapi data, dan unggah berkas. Status pendaftaran dapat dipantau
                     kapan saja.
                 </p>
@@ -595,7 +595,7 @@
                         <Link
                             href={toUrl(login())}
                             id="cta-login"
-                            class="btn-lg inline-flex items-center rounded-full border border-teal-950/20 bg-white/50 font-semibold text-teal-950 backdrop-blur transition hover:bg-white/80"
+                            class="btn-lg inline-flex items-center rounded-full border border-[#113814]/25 bg-white/65 font-semibold text-[#113814] backdrop-blur transition hover:bg-white/90"
                             >Sudah punya akun? Masuk</Link
                         >
                     {/if}
@@ -610,7 +610,7 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <span
-                        class="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-emerald-500 text-white"
+                        class="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#237029] to-[#389838] text-white ring-2 ring-[#d5b01a]/50"
                     >
                         <AppLogoIcon class="size-5 fill-current" />
                     </span>
@@ -625,14 +625,14 @@
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white">Tautan</h3>
                 <ul class="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-400">
                     {#each navLinks.slice(0, 3) as l}
-                        <li><a href={l.href} class="hover:text-teal-700 dark:hover:text-teal-300">{l.label}</a></li>
+                        <li><a href={l.href} class="hover:text-[#237029] dark:hover:text-[#e5c128]">{l.label}</a></li>
                     {/each}
                 </ul>
             </div>
             <div>
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white">Lokasi Layanan</h3>
                 <p class="mt-4 flex gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <MapPin class="mt-0.5 size-4 shrink-0 text-teal-600" />
+                    <MapPin class="mt-0.5 size-4 shrink-0 text-[#2e8b3c]" />
                     Panti Sosial Rehabilitasi Penyandang Disabilitas Sensorik (PSR-PDS)
                 </p>
             </div>
@@ -661,15 +661,16 @@
         font-size: 0.875rem;
         font-weight: 700;
         color: white;
-        background-image: linear-gradient(135deg, #0f766e, #10b981);
-        box-shadow: 0 10px 25px -10px rgb(15 118 110 / 0.6);
+        background-image: linear-gradient(135deg, #216927, #389838);
+        box-shadow: 0 10px 25px -10px rgb(46 139 60 / 0.65);
+        border: 1px solid rgb(213 176 26 / 0.35);
         transition:
             transform 0.2s ease,
             box-shadow 0.2s ease;
     }
     .landing :global(.btn-primary:hover) {
         transform: translateY(-2px);
-        box-shadow: 0 16px 30px -12px rgb(15 118 110 / 0.7);
+        box-shadow: 0 16px 30px -12px rgb(46 139 60 / 0.8);
     }
     .landing :global(.btn-ghost) {
         display: inline-flex;
@@ -679,9 +680,9 @@
         padding: 0.55rem 1.25rem;
         font-size: 0.875rem;
         font-weight: 700;
-        border: 1px solid rgb(15 118 110 / 0.25);
-        background: rgb(255 255 255 / 0.6);
-        color: #115e59;
+        border: 1px solid rgb(46 139 60 / 0.3);
+        background: rgb(255 255 255 / 0.65);
+        color: #1b5920;
         backdrop-filter: blur(8px);
         transition: background 0.2s ease;
     }
@@ -690,8 +691,8 @@
     }
     :global(.dark) .landing :global(.btn-ghost) {
         background: rgb(255 255 255 / 0.05);
-        color: #5eead4;
-        border-color: rgb(94 234 212 / 0.25);
+        color: #f0d24c;
+        border-color: rgb(229 193 40 / 0.3);
     }
     .landing :global(.btn-dark) {
         display: inline-flex;
@@ -700,7 +701,7 @@
         border-radius: 9999px;
         font-weight: 700;
         color: white;
-        background: #042f2e;
+        background: #143d18;
         transition: transform 0.2s ease;
     }
     .landing :global(.btn-dark:hover) {
@@ -716,7 +717,10 @@
         font-weight: 800;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #0f766e;
+        color: #237029;
+    }
+    :global(.dark) .section-eyebrow {
+        color: #e5c128;
     }
     .section-title {
         margin-top: 0.75rem;

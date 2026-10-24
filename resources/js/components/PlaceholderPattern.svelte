@@ -3,7 +3,7 @@
 </script>
 
 <svg
-    class="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20"
+    class="absolute inset-0 size-full stroke-primary/20 dark:stroke-primary/25"
     fill="none"
 >
     <defs>

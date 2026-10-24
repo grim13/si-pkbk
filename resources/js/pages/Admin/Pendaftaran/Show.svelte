@@ -294,7 +294,7 @@
                     </CardContent>
                 </Card>
 
-                <Card class="mt-6 border-indigo-200">
+                <Card class="mt-6 border-primary/30">
                     <CardHeader>
                         <CardTitle>Keputusan & Tindak Lanjut</CardTitle>
                     </CardHeader>
