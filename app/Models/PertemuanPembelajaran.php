@@ -46,6 +46,11 @@ class PertemuanPembelajaran extends Model
         return $this->hasMany(PertemuanPembelajaranPeserta::class, 'pertemuan_pembelajaran_id');
     }
 
+    public function galeri(): HasMany
+    {
+        return $this->hasMany(Galeri::class, 'pertemuan_pembelajaran_id');
+    }
+
     public function isLocked(): bool
     {
         return in_array($this->status, ['pengajuan', 'acc'], true);

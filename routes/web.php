@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\GaleriController as AdminGaleriController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Instruktur\PembelajaranController;
 use App\Http\Controllers\JadwalController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\PekerjaSosial\PembelajaranApprovalController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\RoleMasterController;
 use App\Http\Controllers\UserMasterController;
+use App\Http\Controllers\Wali\GaleriController as WaliGaleriController;
 use App\Http\Controllers\WaliMasterController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,11 +59,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/jadwal/{jadwal}', [JadwalController::class, 'destroy'])->name('jadwal.destroy');
     });
 
+    Route::middleware(['can:galeri.manage'])->group(function () {
+        Route::get('/admin/galeri', [AdminGaleriController::class, 'index'])->name('admin.galeri.index');
+        Route::get('/admin/galeri/{galeri}', [AdminGaleriController::class, 'show'])->name('admin.galeri.show');
+        Route::post('/admin/galeri', [AdminGaleriController::class, 'store'])->name('admin.galeri.store');
+        Route::put('/admin/galeri/{galeri}', [AdminGaleriController::class, 'update'])->name('admin.galeri.update');
+        Route::post('/admin/galeri/{galeri}', [AdminGaleriController::class, 'update'])->name('admin.galeri.update.post');
+        Route::delete('/admin/galeri/{galeri}', [AdminGaleriController::class, 'destroy'])->name('admin.galeri.destroy');
+        Route::delete('/admin/galeri/{galeri}/foto/{foto}', [AdminGaleriController::class, 'destroyFoto'])->name('admin.galeri.foto.destroy');
+    });
+
     Route::middleware(['role:wali'])->group(function () {
         Route::get('/pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
         Route::post('/pendaftaran/step2', [PendaftaranController::class, 'storeDraft'])->name('pendaftaran.store-draft');
         Route::post('/pendaftaran/step3', [PendaftaranController::class, 'uploadBerkas'])->name('pendaftaran.upload-berkas');
         Route::post('/pendaftaran/finalize', [PendaftaranController::class, 'finalize'])->name('pendaftaran.finalize');
+
+        Route::get('/galeri', [WaliGaleriController::class, 'index'])->name('galeri.index');
+        Route::get('/galeri/{galeri}', [WaliGaleriController::class, 'show'])->name('galeri.show');
+        Route::get('/wali/galeri', [WaliGaleriController::class, 'index'])->name('wali.galeri.index');
+        Route::get('/wali/galeri/{galeri}', [WaliGaleriController::class, 'show'])->name('wali.galeri.show');
     });
 
     Route::middleware(['can:asesmen.do'])->group(function () {

@@ -30,6 +30,7 @@ class RolePermissionTableSeeder extends Seeder
         $managePendaftaranPermission = Permission::firstOrCreate(['name' => 'pendaftaran.manage']);
         $manageMataPelajaranPermission = Permission::firstOrCreate(['name' => 'mata_pelajaran.manage']);
         $manageJadwalPermission = Permission::firstOrCreate(['name' => 'jadwal.manage']);
+        $manageGaleriPermission = Permission::firstOrCreate(['name' => 'galeri.manage']);
 
         $adminRole = Role::where('name', 'administrator')->first();
         if ($adminRole) {
@@ -38,6 +39,7 @@ class RolePermissionTableSeeder extends Seeder
             $adminRole->givePermissionTo($managePendaftaranPermission);
             $adminRole->givePermissionTo($manageMataPelajaranPermission);
             $adminRole->givePermissionTo($manageJadwalPermission);
+            $adminRole->givePermissionTo($manageGaleriPermission);
         }
 
         $pendaftaranPermission = Permission::firstOrCreate(['name' => 'pendaftaran.form']);

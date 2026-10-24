@@ -10,6 +10,7 @@
     import GraduationCap from '@lucide/svelte/icons/graduation-cap';
     import Calendar from '@lucide/svelte/icons/calendar';
     import ClipboardCheck from '@lucide/svelte/icons/clipboard-check';
+    import Images from '@lucide/svelte/icons/images';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -71,15 +72,33 @@
             href: '/pendaftaran',
             icon: FileText,
         },
-    ];
-
-    const adminItems: NavItem[] = [
         {
-            title: 'Verifikasi Pendaftaran',
-            href: '/admin/pendaftaran',
-            icon: FileText, // Reusing FileText icon, or we could import ClipboardCheck
+            title: 'Galeri Pembelajaran',
+            href: '/galeri',
+            icon: Images,
         },
     ];
+
+    const adminItems = $derived<NavItem[]>([
+        ...(user?.permissions?.includes('pendaftaran.manage')
+            ? [
+                  {
+                      title: 'Verifikasi Pendaftaran',
+                      href: '/admin/pendaftaran',
+                      icon: FileText,
+                  },
+              ]
+            : []),
+        ...(user?.permissions?.includes('galeri.manage')
+            ? [
+                  {
+                      title: 'Galeri Pembelajaran',
+                      href: '/admin/galeri',
+                      icon: Images,
+                  },
+              ]
+            : []),
+    ]);
 
     const pekerjaSosialItems = $derived<NavItem[]>([
         ...(user?.permissions?.includes('asesmen.do')
@@ -182,6 +201,8 @@
         <NavMain items={mainNavItems} />
         {#if user?.permissions?.includes('access.manage')}
             <NavMain items={accessControlItems} label="Access Control" />
+        {/if}
+        {#if adminItems.length > 0}
             <NavMain items={adminItems} label="Layanan Admin" />
         {/if}
         {#if user?.permissions?.includes('wali.manage')}
