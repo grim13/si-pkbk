@@ -1,3 +1,13 @@
+<script module lang="ts">
+    export const layout = {
+        breadcrumbs: [
+            { title: 'Dashboard', href: '/dashboard' },
+            { title: 'Data Pembelajaran (ACC)', href: '/kepala-seksi/pembelajaran' },
+            { title: 'Detail Pertemuan', href: '#' },
+        ],
+    };
+</script>
+
 <script lang="ts">
     import { router } from '@inertiajs/svelte';
     import {
@@ -36,8 +46,6 @@
         TableHeader,
         TableRow,
     } from '@/components/ui/table';
-    import AppLayout from '@/layouts/AppLayout.svelte';
-    import type { BreadcrumbItem } from '@/types';
 
     interface GaleriFotoItem {
         id: number;
@@ -131,15 +139,6 @@
     }: {
         pertemuan: PertemuanDetail;
     } = $props();
-
-    let breadcrumbs = $derived<BreadcrumbItem[]>([
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Data Pembelajaran (ACC)', href: '/kepala-seksi/pembelajaran' },
-        {
-            title: `Detail Pertemuan #${pertemuan.id}`,
-            href: `/kepala-seksi/pembelajaran/${pertemuan.id}`,
-        },
-    ]);
 
     function formatDate(dateString?: string | null) {
         if (!dateString) {
@@ -235,8 +234,7 @@
     <title>Detail Pembelajaran #{pertemuan.id} - Kepala Seksi</title>
 </svelte:head>
 
-<AppLayout {breadcrumbs}>
-    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+<div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div class="space-y-1">
                 <Button
@@ -620,4 +618,3 @@
             {/if}
         </Dialog.Content>
     </Dialog.Root>
-</AppLayout>
