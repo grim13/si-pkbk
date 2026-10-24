@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\GaleriController as AdminGaleriController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Instruktur\PembelajaranController;
 use App\Http\Controllers\JadwalController;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::middleware(['can:access.manage'])->group(function () {
         Route::get('/user-master', [UserMasterController::class, 'index'])->name('user-master.index');
