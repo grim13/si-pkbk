@@ -24,7 +24,6 @@
     import {
         Card,
         CardContent,
-        CardFooter,
         CardHeader,
         CardTitle,
     } from "@/components/ui/card";
@@ -331,7 +330,7 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {#each galeriList as item (item.id)}
                 {@const coverFoto = item.foto?.[0]}
-                <Card class="flex flex-col overflow-hidden">
+                <Card class="flex flex-col overflow-hidden py-0 gap-0">
                     <div class="relative aspect-video bg-muted overflow-hidden">
                         {#if coverFoto}
                             <img
@@ -353,7 +352,7 @@
                     </div>
 
                     {#if item.foto && item.foto.length > 1}
-                        <div class="flex gap-1.5 overflow-x-auto border-b bg-muted/30 px-4 py-2">
+                        <div class="flex gap-1.5 overflow-x-auto border-t border-b bg-muted/30 px-4 py-2">
                             {#each item.foto.slice(0, 5) as foto (foto.id)}
                                 <img
                                     src={`/storage/${foto.file_path}`}
@@ -369,7 +368,7 @@
                         </div>
                     {/if}
 
-                    <CardHeader class="pb-2">
+                    <CardHeader class="pt-4 pb-2">
                         <div class="flex items-start justify-between gap-2">
                             <CardTitle class="text-base line-clamp-1">
                                 {item.judul}
@@ -381,11 +380,12 @@
                                     </Button>
                                 </DropdownMenu.Trigger>
                                 <DropdownMenu.Content align="end">
-                                    <DropdownMenu.Item asChild>
-                                        <Link href={`/admin/galeri/${item.id}`}>
-                                            <Eye class="mr-2 h-4 w-4" />
-                                            Lihat Detail
-                                        </Link>
+                                    <DropdownMenu.Item
+                                        onclick={() =>
+                                            router.visit(`/admin/galeri/${item.id}`)}
+                                    >
+                                        <Eye class="mr-2 h-4 w-4" />
+                                        Lihat Detail
                                     </DropdownMenu.Item>
                                     <DropdownMenu.Item onclick={() => openEditDialog(item)}>
                                         <Edit class="mr-2 h-4 w-4" />
@@ -409,7 +409,7 @@
                         {/if}
                     </CardHeader>
 
-                    <CardContent class="flex-1 space-y-2 text-xs text-muted-foreground">
+                    <CardContent class="flex-1 space-y-2 pb-5 text-xs text-muted-foreground">
                         <div class="rounded-lg border bg-muted/30 p-3 space-y-1.5">
                             <div class="font-semibold text-foreground flex items-center gap-1.5">
                                 <BookOpen class="h-3.5 w-3.5 text-primary shrink-0" />
@@ -441,15 +441,6 @@
                             {/if}
                         </div>
                     </CardContent>
-
-                    <CardFooter class="border-t pt-3 flex justify-between gap-2">
-                        <Button variant="outline" size="sm" class="w-full" asChild>
-                            <Link href={`/admin/galeri/${item.id}`}>
-                                <Eye class="mr-1.5 h-3.5 w-3.5" />
-                                Detail & Foto
-                            </Link>
-                        </Button>
-                    </CardFooter>
                 </Card>
             {/each}
         </div>
@@ -457,23 +448,33 @@
 </div>
 
 <Dialog.Root bind:open={isDialogOpen}>
-    <Dialog.Content class="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <Dialog.Header>
-            <Dialog.Title>
-                {isEditing ? "Edit Galeri Pembelajaran" : "Tambah Galeri Pembelajaran"}
-            </Dialog.Title>
-            <Dialog.Description>
-                Pilih sesi pertemuan pembelajaran yang dilakukan instruktur di kelas, lalu unggah beberapa foto dokumentasi kegiatan.
-            </Dialog.Description>
-        </Dialog.Header>
+    <Dialog.Content
+        class="w-[92vw] max-w-3xl sm:max-w-3xl flex flex-col overflow-hidden p-6"
+        style="width: 92vw; max-width: 48rem; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden;"
+    >
+        <div class="shrink-0 pb-3 border-b">
+            <Dialog.Header>
+                <Dialog.Title>
+                    {isEditing ? "Edit Galeri Pembelajaran" : "Tambah Galeri Pembelajaran"}
+                </Dialog.Title>
+                <Dialog.Description>
+                    Pilih sesi pertemuan pembelajaran yang dilakukan instruktur di kelas, lalu unggah beberapa foto dokumentasi kegiatan.
+                </Dialog.Description>
+            </Dialog.Header>
+        </div>
 
         <form
+            class="flex flex-col flex-1 min-h-0 overflow-hidden"
+            style="display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden;"
             onsubmit={(e) => {
                 e.preventDefault();
                 submitForm();
             }}
         >
-            <div class="grid gap-4 py-4">
+            <div
+                class="space-y-4 py-4 pr-2 flex-1 min-h-0 overflow-y-auto"
+                style="flex: 1 1 auto; min-height: 0; max-height: calc(88vh - 165px); overflow-y: auto;"
+            >
                 <div class="grid gap-2">
                     <Label for="pertemuan_pembelajaran_id">
                         Pertemuan Pembelajaran di Kelas <span class="text-red-500">*</span>
@@ -546,33 +547,51 @@
                 </div>
 
                 {#if isEditing && currentGaleri?.foto?.length}
-                    <div class="grid gap-2">
-                        <Label>Foto Saat Ini (Klik untuk menandai hapus)</Label>
-                        <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                            {#each currentGaleri.foto as foto (foto.id)}
-                                {@const markedForDelete = form.hapus_foto_ids.includes(foto.id)}
-                                <button
-                                    type="button"
-                                    onclick={() => toggleRemoveExistingFoto(foto.id)}
-                                    class="group relative aspect-square overflow-hidden rounded-lg border text-left transition-all {markedForDelete
-                                        ? 'ring-2 ring-destructive opacity-50'
-                                        : 'hover:ring-2 hover:ring-primary'}"
-                                >
-                                    <img
-                                        src={`/storage/${foto.file_path}`}
-                                        alt={foto.nama_file || "Foto Galeri"}
-                                        class="h-full w-full object-cover"
-                                    />
-                                    <div class="absolute top-1.5 right-1.5 rounded-full bg-black/70 p-1 text-white">
-                                        <X class="h-3 w-3" />
-                                    </div>
-                                    {#if markedForDelete}
-                                        <div class="absolute inset-x-0 bottom-0 bg-destructive px-1.5 py-0.5 text-[10px] font-semibold text-white text-center">
-                                            Akan Dihapus
+                    <div class="grid gap-1.5">
+                        <div class="flex items-center justify-between">
+                            <Label>
+                                Foto Saat Ini ({currentGaleri.foto.length} foto — klik untuk menandai hapus)
+                            </Label>
+                            {#if form.hapus_foto_ids.length > 0}
+                                <span class="text-xs font-medium text-destructive">
+                                    {form.hapus_foto_ids.length} foto ditandai hapus
+                                </span>
+                            {/if}
+                        </div>
+                        <div
+                            class="rounded-lg border bg-muted/20 p-2 overflow-y-auto"
+                            style="max-height: 152px; overflow-y: auto;"
+                        >
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px;"
+                            >
+                                {#each currentGaleri.foto as foto (foto.id)}
+                                    {@const markedForDelete = form.hapus_foto_ids.includes(foto.id)}
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleRemoveExistingFoto(foto.id)}
+                                        style="height: 64px; width: 100%;"
+                                        class="group relative overflow-hidden rounded-md border text-left transition-all {markedForDelete
+                                            ? 'ring-2 ring-destructive opacity-50'
+                                            : 'hover:ring-2 hover:ring-primary'}"
+                                        title={markedForDelete ? "Batal hapus foto ini" : "Klik untuk menandai hapus"}
+                                    >
+                                        <img
+                                            src={`/storage/${foto.file_path}`}
+                                            alt={foto.nama_file || "Foto Galeri"}
+                                            class="h-full w-full object-cover"
+                                        />
+                                        <div class="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 text-white">
+                                            <X class="h-2.5 w-2.5" />
                                         </div>
-                                    {/if}
-                                </button>
-                            {/each}
+                                        {#if markedForDelete}
+                                            <div class="absolute inset-x-0 bottom-0 bg-destructive px-1 py-0.5 text-[9px] font-semibold text-white text-center leading-tight">
+                                                Hapus
+                                            </div>
+                                        {/if}
+                                    </button>
+                                {/each}
+                            </div>
                         </div>
                     </div>
                 {/if}
@@ -586,9 +605,9 @@
                     </Label>
                     <label
                         for="fotos"
-                        class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:bg-muted/50"
+                        class="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed p-4 text-center transition-colors hover:bg-muted/50"
                     >
-                        <Upload class="h-6 w-6 text-muted-foreground" />
+                        <Upload class="h-5 w-5 text-muted-foreground" />
                         <div class="text-xs">
                             <span class="font-semibold text-primary">Klik untuk memilih beberapa foto</span>
                             <p class="text-muted-foreground mt-0.5">
@@ -606,24 +625,39 @@
                     </label>
 
                     {#if previewUrls.length > 0}
-                        <div class="grid grid-cols-3 gap-3 pt-2 sm:grid-cols-4">
-                            {#each previewUrls as preview, idx (preview.url)}
-                                <div class="relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                                    <img
-                                        src={preview.url}
-                                        alt={preview.name}
-                                        class="h-full w-full object-cover"
-                                    />
-                                    <button
-                                        type="button"
-                                        onclick={() => removeSelectedFile(idx)}
-                                        class="absolute top-1.5 right-1.5 rounded-full bg-black/70 p-1 text-white hover:bg-destructive"
-                                        title="Batal pilih foto ini"
-                                    >
-                                        <X class="h-3 w-3" />
-                                    </button>
+                        <div class="grid gap-1.5 pt-1">
+                            <span class="text-xs font-medium text-muted-foreground">
+                                Foto Baru Dipilih ({previewUrls.length} foto):
+                            </span>
+                            <div
+                                class="rounded-lg border bg-muted/20 p-2 overflow-y-auto"
+                                style="max-height: 152px; overflow-y: auto;"
+                            >
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px;"
+                                >
+                                    {#each previewUrls as preview, idx (preview.url)}
+                                        <div
+                                            class="relative overflow-hidden rounded-md border bg-muted"
+                                            style="height: 64px; width: 100%;"
+                                        >
+                                            <img
+                                                src={preview.url}
+                                                alt={preview.name}
+                                                class="h-full w-full object-cover"
+                                            />
+                                            <button
+                                                type="button"
+                                                onclick={() => removeSelectedFile(idx)}
+                                                class="absolute top-1 right-1 rounded-full bg-black/70 p-0.5 text-white hover:bg-destructive"
+                                                title="Batal pilih foto ini"
+                                            >
+                                                <X class="h-2.5 w-2.5" />
+                                            </button>
+                                        </div>
+                                    {/each}
                                 </div>
-                            {/each}
+                            </div>
                         </div>
                     {/if}
 
@@ -633,18 +667,20 @@
                 </div>
             </div>
 
-            <Dialog.Footer>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onclick={() => (isDialogOpen = false)}
-                >
-                    Batal
-                </Button>
-                <Button type="submit" disabled={form.processing}>
-                    {form.processing ? "Menyimpan..." : "Simpan Galeri"}
-                </Button>
-            </Dialog.Footer>
+            <div class="shrink-0 border-t pt-4 mt-2">
+                <Dialog.Footer>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onclick={() => (isDialogOpen = false)}
+                    >
+                        Batal
+                    </Button>
+                    <Button type="submit" disabled={form.processing}>
+                        {form.processing ? "Menyimpan..." : "Simpan Galeri"}
+                    </Button>
+                </Dialog.Footer>
+            </div>
         </form>
     </Dialog.Content>
 </Dialog.Root>

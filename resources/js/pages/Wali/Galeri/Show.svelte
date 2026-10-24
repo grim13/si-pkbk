@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-    import { Link } from "@inertiajs/svelte";
+    import { router } from "@inertiajs/svelte";
     import AppHead from "@/components/AppHead.svelte";
     import { Button } from "@/components/ui/button";
     import { Badge } from "@/components/ui/badge";
@@ -66,11 +66,13 @@
                 </p>
             {/if}
         </div>
-        <Button variant="outline" size="sm" asChild>
-            <Link href="/galeri">
-                <ArrowLeft class="mr-2 h-4 w-4" />
-                Kembali ke Galeri
-            </Link>
+        <Button
+            variant="outline"
+            size="sm"
+            onclick={() => router.visit("/galeri")}
+        >
+            <ArrowLeft class="mr-2 h-4 w-4" />
+            Kembali ke Galeri
         </Button>
     </div>
 
@@ -177,7 +179,7 @@
         if (!open) selectedFoto = null;
     }}
 >
-    <Dialog.Content class="sm:max-w-[800px]">
+    <Dialog.Content class="w-[95vw] max-w-4xl sm:max-w-4xl">
         <Dialog.Header>
             <Dialog.Title>{selectedFoto?.nama_file || galeri.judul}</Dialog.Title>
         </Dialog.Header>

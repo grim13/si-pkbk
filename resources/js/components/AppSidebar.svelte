@@ -137,6 +137,11 @@
 
     const kepalaSeksiItems: NavItem[] = [
         {
+            title: 'Data Pembelajaran',
+            href: '/kepala-seksi/pembelajaran',
+            icon: BookOpen,
+        },
+        {
             title: 'Penentuan Kelulusan',
             href: '/kepala-seksi/kelulusan',
             icon: GraduationCap,

@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Instruktur\PembelajaranController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\KepalaSeksi\KelulusanController;
+use App\Http\Controllers\KepalaSeksi\PembelajaranController as KepalaSeksiPembelajaranController;
 use App\Http\Controllers\MataPelajaranController;
 use App\Http\Controllers\PekerjaSosial\AsesmenController;
 use App\Http\Controllers\PekerjaSosial\PembelajaranApprovalController;
@@ -104,6 +105,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/kepala-seksi/kelulusan', [KelulusanController::class, 'index'])->name('kepala-seksi.kelulusan.index');
         Route::get('/kepala-seksi/kelulusan/{pendaftaran}', [KelulusanController::class, 'show'])->name('kepala-seksi.kelulusan.show');
         Route::post('/kepala-seksi/kelulusan/{pendaftaran}', [KelulusanController::class, 'update'])->name('kepala-seksi.kelulusan.update');
+
+        Route::get('/kepala-seksi/pembelajaran', [KepalaSeksiPembelajaranController::class, 'index'])->name('kepala-seksi.pembelajaran.index');
+        Route::get('/kepala-seksi/pembelajaran/{pertemuan}', [KepalaSeksiPembelajaranController::class, 'show'])->name('kepala-seksi.pembelajaran.show');
     });
 });
 

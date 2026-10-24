@@ -324,3 +324,110 @@ test('user selain admin ditolak mengakses manajemen galeri admin', function () {
     $this->get(route('admin.galeri.index'))->assertForbidden();
     $this->post(route('admin.galeri.store'), [])->assertForbidden();
 });
+
+test('kepala seksi dapat melihat semua pembelajaran yang sudah di acc oleh pekerja sosial beserta detail peserta dan galeri foto jika ada', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->create();
+    $admin->assignRole('administrator');
+
+    $instruktur = User::factory()->create(['name' => 'Instruktur Kelas']);
+    $instruktur->assignRole('instruktur');
+
+    $pekerjaSosial = User::factory()->create(['name' => 'Pekerja Sosial Verifikator']);
+    $pekerjaSosial->assignRole('pekerja_sosial');
+
+    $kepalaSeksi = User::factory()->create(['name' => 'Kepala Seksi Rehabilitasi']);
+    $kepalaSeksi->assignRole('kepala_seksi');
+
+    $tunaNetra = JenisDisabilitas::factory()->tunaNetra()->create();
+    $mapel = MataPelajaran::factory()->create(['nama' => 'Komputer Bicara']);
+    $mapel->jenisDisabilitas()->sync([$tunaNetra->id]);
+
+    $jadwal = Jadwal::factory()->create([
+        'mata_pelajaran_id' => $mapel->id,
+        'instruktur_id' => $instruktur->id,
+        'tahun' => 2026,
+        'hari' => 'Selasa',
+    ]);
+
+    [, , $peserta1] = createWaliWithPeserta(
+        'Wali Satu',
+        '1671010000000301',
+        $tunaNetra,
+        'Peserta Satu',
+        '1671010000000401',
+    );
+
+    // 1. Pertemuan yang sudah di-ACC oleh Pekerja Sosial
+    $pertemuanAcc = PertemuanPembelajaran::create([
+        'jadwal_id' => $jadwal->id,
+        'instruktur_id' => $instruktur->id,
+        'pekerja_sosial_id' => $pekerjaSosial->id,
+        'tanggal' => '2026-03-17',
+        'status' => 'acc',
+        'keterangan' => 'Praktik Mengetik dengan Screen Reader',
+        'catatan_pekerja_sosial' => 'Laporan sudah lengkap dan sesuai.',
+        'approved_at' => now(),
+    ]);
+
+    $pertemuanAcc->pesertaDetail()->create([
+        'pendaftaran_peserta_id' => $peserta1->id,
+        'presensi' => 'hadir',
+        'nilai' => 'sangat_baik',
+        'keterangan' => 'Sangat lancar mengetik 10 jari',
+    ]);
+
+    // 2. Pertemuan yang masih berstatus pengajuan (belum di-ACC)
+    $pertemuanBelumAcc = PertemuanPembelajaran::create([
+        'jadwal_id' => $jadwal->id,
+        'instruktur_id' => $instruktur->id,
+        'tanggal' => '2026-03-24',
+        'status' => 'pengajuan',
+        'keterangan' => 'Pertemuan 2 Belum ACC',
+    ]);
+
+    // Admin mengunggah galeri foto ke pertemuan yang sudah ACC
+    $this->actingAs($admin);
+    $this->post(route('admin.galeri.store'), [
+        'pertemuan_pembelajaran_id' => $pertemuanAcc->id,
+        'judul' => 'Dokumentasi Praktik Screen Reader',
+        'keterangan' => 'Foto kegiatan di lab komputer',
+        'fotos' => [
+            fakePhoto('lab-1.png'),
+            fakePhoto('lab-2.png'),
+        ],
+    ])->assertSessionHasNoErrors();
+
+    // Kepala Seksi mengakses daftar pembelajaran -> hanya muncul yang sudah ACC
+    $this->actingAs($kepalaSeksi);
+    $indexResponse = $this->get(route('kepala-seksi.pembelajaran.index'));
+    $indexResponse->assertOk();
+
+    $pertemuanListProps = $indexResponse->viewData('page')['props']['pertemuanList'];
+    expect($pertemuanListProps)->toHaveCount(1)
+        ->and($pertemuanListProps[0]['id'])->toBe($pertemuanAcc->id)
+        ->and($pertemuanListProps[0]['status'])->toBe('acc')
+        ->and($pertemuanListProps[0]['galeri'])->toHaveCount(1)
+        ->and($pertemuanListProps[0]['galeri'][0]['foto'])->toHaveCount(2);
+
+    // Kepala Seksi melihat detail pertemuan yang sudah ACC -> memuat data pembelajaran lengkap + peserta + galeri foto
+    $showResponse = $this->get(route('kepala-seksi.pembelajaran.show', $pertemuanAcc->id));
+    $showResponse->assertOk();
+
+    $pertemuanProp = $showResponse->viewData('page')['props']['pertemuan'];
+    expect($pertemuanProp['id'])->toBe($pertemuanAcc->id)
+        ->and($pertemuanProp['peserta_detail'])->toHaveCount(1)
+        ->and($pertemuanProp['peserta_detail'][0]['presensi'])->toBe('hadir')
+        ->and($pertemuanProp['peserta_detail'][0]['nilai'])->toBe('sangat_baik')
+        ->and($pertemuanProp['galeri'])->toHaveCount(1)
+        ->and($pertemuanProp['galeri'][0]['foto'])->toHaveCount(2);
+
+    // Kepala Seksi tidak dapat membuka detail pertemuan yang belum di-ACC
+    $this->get(route('kepala-seksi.pembelajaran.show', $pertemuanBelumAcc->id))
+        ->assertForbidden();
+
+    // Role selain Kepala Seksi (misal Instruktur) ditolak mengakses menu Kepala Seksi
+    $this->actingAs($instruktur);
+    $this->get(route('kepala-seksi.pembelajaran.index'))->assertForbidden();
+});

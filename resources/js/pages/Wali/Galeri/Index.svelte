@@ -184,7 +184,7 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {#each galeriList as item (item.id)}
                 {@const coverFoto = item.foto?.[0]}
-                <Card class="flex flex-col overflow-hidden">
+                <Card class="flex flex-col overflow-hidden py-0 gap-0">
                     <Link href={`/galeri/${item.id}`} class="block relative aspect-video bg-muted overflow-hidden">
                         {#if coverFoto}
                             <img
@@ -205,7 +205,7 @@
                         </div>
                     </Link>
 
-                    <CardHeader class="pb-2">
+                    <CardHeader class="pt-4 pb-2">
                         <CardTitle class="text-base line-clamp-1">
                             {item.judul}
                         </CardTitle>
@@ -255,12 +255,15 @@
                         {/if}
                     </CardContent>
 
-                    <CardFooter class="border-t pt-3">
-                        <Button variant="outline" size="sm" class="w-full" asChild>
-                            <Link href={`/galeri/${item.id}`}>
-                                <Eye class="mr-1.5 h-3.5 w-3.5" />
-                                Lihat Semua Foto ({item.foto_count ?? item.foto?.length ?? 0})
-                            </Link>
+                    <CardFooter class="border-t py-3 mt-3">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="w-full"
+                            onclick={() => router.visit(`/galeri/${item.id}`)}
+                        >
+                            <Eye class="mr-1.5 h-3.5 w-3.5" />
+                            Lihat Semua Foto ({item.foto_count ?? item.foto?.length ?? 0})
                         </Button>
                     </CardFooter>
                 </Card>

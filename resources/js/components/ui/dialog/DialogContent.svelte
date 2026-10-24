@@ -4,7 +4,15 @@
     import { cn } from '@/lib/utils';
     import { DIALOG_CONTEXT, type DialogContext } from './context';
 
-    let { class: className = '', children }: { class?: string; children?: Snippet } = $props();
+    let {
+        class: className = '',
+        style = '',
+        children,
+    }: {
+        class?: string;
+        style?: string;
+        children?: Snippet;
+    } = $props();
 
     const { open, setOpen } = getContext<DialogContext>(DIALOG_CONTEXT);
 
@@ -24,6 +32,7 @@
                 'relative z-10 w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg',
                 className,
             )}
+            {style}
             role="dialog"
             aria-modal="true"
         >
