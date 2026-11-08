@@ -120,6 +120,17 @@
                   },
               ]
             : []),
+        ...(user?.permissions?.includes('asesmen.do') ||
+        user?.permissions?.includes('pembelajaran.approve') ||
+        user?.roles?.includes('pekerja_sosial')
+            ? [
+                  {
+                      title: 'Evaluasi Kemandirian',
+                      href: '/pekerja-sosial/evaluasi',
+                      icon: GraduationCap,
+                  },
+              ]
+            : []),
     ]);
 
     const instrukturItems = $derived<NavItem[]>(
@@ -145,6 +156,11 @@
             title: 'Penentuan Kelulusan',
             href: '/kepala-seksi/kelulusan',
             icon: GraduationCap,
+        },
+        {
+            title: 'Evaluasi Lepas Mandiri',
+            href: '/kepala-seksi/lepas-mandiri',
+            icon: ClipboardCheck,
         },
     ];
 

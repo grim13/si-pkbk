@@ -32,7 +32,7 @@ class GaleriController extends Controller
                     $q->where('presensi', 'hadir')
                         ->whereHas('pendaftaranPeserta', function ($pq) use ($wali) {
                             $pq->where('wali_id', $wali->id)
-                                ->where('status_pendaftaran', 'diterima');
+                                ->whereIn('status_pendaftaran', ['diterima', 'pengajuan_lepas_mandiri', 'lepas_mandiri']);
                         })
                         ->with('pendaftaranPeserta:id,wali_id,nama,no_pendaftaran,jenis_disabilitas_id');
                 },
@@ -50,7 +50,7 @@ class GaleriController extends Controller
                     ->where('pendaftaran_peserta_id', $pesertaId)
                     ->whereHas('pendaftaranPeserta', function ($pq) use ($wali) {
                         $pq->where('wali_id', $wali->id)
-                            ->where('status_pendaftaran', 'diterima');
+                            ->whereIn('status_pendaftaran', ['diterima', 'pengajuan_lepas_mandiri', 'lepas_mandiri']);
                     });
             });
         }
@@ -71,7 +71,7 @@ class GaleriController extends Controller
 
         $pesertaList = PendaftaranPeserta::with('jenisDisabilitas:id,nama')
             ->where('wali_id', $wali->id)
-            ->where('status_pendaftaran', 'diterima')
+            ->whereIn('status_pendaftaran', ['diterima', 'pengajuan_lepas_mandiri', 'lepas_mandiri'])
             ->orderBy('nama')
             ->get(['id', 'wali_id', 'no_pendaftaran', 'nama', 'jenis_disabilitas_id', 'status_pendaftaran']);
 

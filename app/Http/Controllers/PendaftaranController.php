@@ -20,7 +20,7 @@ class PendaftaranController extends Controller
 
         $persyaratan = PersyaratanAdministrasi::orderBy('id', 'asc')->get();
         $jenis_berkas = JenisBerkasPendaftaran::orderBy('id', 'asc')->get();
-        $pendaftaranList = PendaftaranPeserta::with('berkas')
+        $pendaftaranModels = PendaftaranPeserta::with(['berkas', 'jenisDisabilitas:id,nama'])
             ->where('wali_id', $wali->id)
             ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
@@ -29,18 +29,40 @@ class PendaftaranController extends Controller
         $isCreatingNew = $request->boolean('baru');
 
         if ($isCreatingNew) {
-            $pendaftaran = null;
+            $selectedModel = null;
         } elseif ($request->filled('pendaftaran_id')) {
-            $pendaftaran = $pendaftaranList->firstWhere('id', (int) $request->pendaftaran_id);
+            $selectedModel = $pendaftaranModels->firstWhere('id', (int) $request->pendaftaran_id);
         } else {
-            $pendaftaran = $pendaftaranList->first();
+            $selectedModel = $pendaftaranModels->first();
         }
+
+        $formatPesertaForWali = function (PendaftaranPeserta $item): array {
+            $lamaPembinaan = $item->calculateLamaPembinaan();
+            $ringkasan = $item->status_pendaftaran === 'lepas_mandiri'
+                ? $item->buildRingkasanPembelajaran()
+                : null;
+
+            return [
+                ...$item->toArray(),
+                'lama_pembinaan' => $lamaPembinaan['label'],
+                'lama_pembinaan_hari' => $lamaPembinaan['total_days'],
+                'ringkasan_pembelajaran' => $ringkasan,
+            ];
+        };
+
+        $pendaftaranList = $pendaftaranModels
+            ->map($formatPesertaForWali)
+            ->values()
+            ->all();
+
+        $pendaftaran = $selectedModel ? $formatPesertaForWali($selectedModel) : null;
 
         return Inertia::render('Pendaftaran/Index', [
             'persyaratan' => $persyaratan,
             'jenis_berkas' => $jenis_berkas,
             'pendaftaran' => $pendaftaran,
             'pendaftaran_list' => $pendaftaranList,
+            'ringkasan_pembelajaran' => $pendaftaran['ringkasan_pembelajaran'] ?? null,
             'is_creating_new' => $isCreatingNew,
         ]);
     }

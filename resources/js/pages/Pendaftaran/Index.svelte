@@ -151,7 +151,7 @@
 
 <AppHead title="Pendaftaran" />
 
-<div class="container mx-auto py-8 px-4 max-w-4xl">
+<div class="w-full p-4 md:p-6">
     {#if pendaftaran_list && pendaftaran_list.length > 0}
         <div class="mb-6 rounded-xl border bg-card p-4 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-3">

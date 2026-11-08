@@ -6,9 +6,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Instruktur\PembelajaranController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\KepalaSeksi\KelulusanController;
+use App\Http\Controllers\KepalaSeksi\LepasMandiriController;
 use App\Http\Controllers\KepalaSeksi\PembelajaranController as KepalaSeksiPembelajaranController;
 use App\Http\Controllers\MataPelajaranController;
 use App\Http\Controllers\PekerjaSosial\AsesmenController;
+use App\Http\Controllers\PekerjaSosial\EvaluasiKemandirianController;
 use App\Http\Controllers\PekerjaSosial\PembelajaranApprovalController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\RoleMasterController;
@@ -95,6 +97,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/pekerja-sosial/pembelajaran/{pertemuan}', [PembelajaranApprovalController::class, 'update'])->name('pekerja-sosial.pembelajaran.update');
     });
 
+    Route::middleware(['role_or_permission:pekerja_sosial|asesmen.do|pembelajaran.approve'])->group(function () {
+        Route::get('/pekerja-sosial/evaluasi', [EvaluasiKemandirianController::class, 'index'])->name('pekerja-sosial.evaluasi.index');
+        Route::get('/pekerja-sosial/evaluasi/{pendaftaran}', [EvaluasiKemandirianController::class, 'show'])->name('pekerja-sosial.evaluasi.show');
+        Route::post('/pekerja-sosial/evaluasi/{pendaftaran}', [EvaluasiKemandirianController::class, 'store'])->name('pekerja-sosial.evaluasi.store');
+        Route::post('/pekerja-sosial/evaluasi/{pendaftaran}/ajukan', [EvaluasiKemandirianController::class, 'store'])->name('pekerja-sosial.evaluasi.ajukan');
+    });
+
     Route::middleware(['can:pembelajaran.do'])->group(function () {
         Route::get('/instruktur/pembelajaran', [PembelajaranController::class, 'index'])->name('instruktur.pembelajaran.index');
         Route::get('/instruktur/pembelajaran/jadwal/{jadwal}', [PembelajaranController::class, 'show'])->name('instruktur.pembelajaran.show');
@@ -109,6 +118,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/kepala-seksi/pembelajaran', [KepalaSeksiPembelajaranController::class, 'index'])->name('kepala-seksi.pembelajaran.index');
         Route::get('/kepala-seksi/pembelajaran/{pertemuan}', [KepalaSeksiPembelajaranController::class, 'show'])->name('kepala-seksi.pembelajaran.show');
+
+        Route::get('/kepala-seksi/lepas-mandiri', [LepasMandiriController::class, 'index'])->name('kepala-seksi.lepas-mandiri.index');
+        Route::get('/kepala-seksi/lepas-mandiri/{pendaftaran}', [LepasMandiriController::class, 'show'])->name('kepala-seksi.lepas-mandiri.show');
+        Route::post('/kepala-seksi/lepas-mandiri/{pendaftaran}', [LepasMandiriController::class, 'update'])->name('kepala-seksi.lepas-mandiri.update');
     });
 });
 

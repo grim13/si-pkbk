@@ -55,7 +55,7 @@ class Galeri extends Model
                 $detailQuery->where('presensi', 'hadir')
                     ->whereHas('pendaftaranPeserta', function (Builder $pesertaQuery) use ($waliId) {
                         $pesertaQuery->where('wali_id', $waliId)
-                            ->where('status_pendaftaran', 'diterima')
+                            ->whereIn('status_pendaftaran', ['diterima', 'pengajuan_lepas_mandiri', 'lepas_mandiri'])
                             ->where(function (Builder $dateQuery) {
                                 $dateQuery->whereNull('tanggal_mulai_diterima')
                                     ->orWhereRaw('DATE(pendaftaran_peserta.tanggal_mulai_diterima) <= DATE(pertemuan_pembelajaran.tanggal)');

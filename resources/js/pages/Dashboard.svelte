@@ -101,6 +101,8 @@
         asesmen: 'Tahap Asesmen',
         selesai_asesmen: 'Menunggu Kelulusan',
         diterima: 'Diterima / Aktif',
+        pengajuan_lepas_mandiri: 'Pengajuan Lepas Mandiri',
+        lepas_mandiri: 'Lepas Mandiri',
         ditolak: 'Ditolak',
     };
 
@@ -117,6 +119,21 @@
         cukup: 'Cukup',
         kurang: 'Kurang',
     };
+
+    function nilaiBadgeClass(nilai: string | null) {
+        switch (nilai) {
+            case 'sangat_baik':
+                return 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300';
+            case 'baik':
+                return 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300';
+            case 'cukup':
+                return 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300';
+            case 'kurang':
+                return 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300';
+            default:
+                return 'text-muted-foreground';
+        }
+    }
 
     function formatDate(dateString?: string | null) {
         if (!dateString) return '-';
@@ -530,12 +547,14 @@
                                             <h4 class="text-base font-bold">{p.nama}</h4>
                                         </div>
                                         <Badge
-                                            variant={p.status_pendaftaran === 'diterima'
+                                            variant={p.status_pendaftaran === 'diterima' || p.status_pendaftaran === 'lepas_mandiri'
                                                 ? 'default'
                                                 : 'outline'}
                                             class={p.status_pendaftaran === 'diterima'
                                                 ? 'bg-emerald-600 hover:bg-emerald-600'
-                                                : ''}
+                                                : p.status_pendaftaran === 'lepas_mandiri'
+                                                  ? 'bg-teal-600 hover:bg-teal-600'
+                                                  : ''}
                                         >
                                             {statusPendaftaranLabels[p.status_pendaftaran] ??
                                                 p.status_pendaftaran}
@@ -555,6 +574,69 @@
                                             Izin: {p.izin_count ?? 0}
                                         </Badge>
                                     </div>
+
+                                    {#if p.status_pendaftaran === 'lepas_mandiri' && p.ringkasan_pembelajaran}
+                                        <div class="mt-3 space-y-2.5 rounded-lg border border-teal-200 bg-teal-50/40 p-3 dark:border-teal-900/50 dark:bg-teal-950/20">
+                                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                                <div class="flex items-center gap-1.5 text-xs font-semibold text-teal-800 dark:text-teal-300">
+                                                    <GraduationCap class="size-4" />
+                                                    <span>Disetujui Lepas Mandiri (ACC)</span>
+                                                </div>
+                                                <div class="flex flex-wrap items-center gap-1.5">
+                                                    {#if p.ringkasan_pembelajaran.summary?.lama_pembinaan}
+                                                        <Badge variant="outline" class="text-[10px]">
+                                                            {p.ringkasan_pembelajaran.summary.lama_pembinaan}
+                                                        </Badge>
+                                                    {/if}
+                                                    {#if p.ringkasan_pembelajaran.summary?.rata_rata_nilai}
+                                                        <Badge
+                                                            variant="outline"
+                                                            class="text-[10px] {nilaiBadgeClass(p.ringkasan_pembelajaran.summary.rata_rata_nilai)}"
+                                                        >
+                                                            Rata-rata: {p.ringkasan_pembelajaran.summary.rata_rata_label} ({p.ringkasan_pembelajaran.summary.rata_rata_skor})
+                                                        </Badge>
+                                                    {/if}
+                                                </div>
+                                            </div>
+
+                                            {#if p.keterangan_keputusan_lepas_mandiri}
+                                                <p class="text-xs text-muted-foreground">
+                                                    <strong class="text-foreground">Catatan Kepala Seksi:</strong> {p.keterangan_keputusan_lepas_mandiri}
+                                                </p>
+                                            {/if}
+
+                                            {#if (p.ringkasan_pembelajaran.mata_pelajaran_list ?? []).length > 0}
+                                                <div class="space-y-1.5 border-t border-teal-200/70 pt-2 dark:border-teal-900/40">
+                                                    <p class="text-[11px] font-semibold uppercase tracking-wider text-teal-800 dark:text-teal-300">
+                                                        Ringkasan Pembelajaran Anak ({p.ringkasan_pembelajaran.mata_pelajaran_list.length} Mata Pelajaran)
+                                                    </p>
+                                                    <div class="space-y-1.5">
+                                                        {#each p.ringkasan_pembelajaran.mata_pelajaran_list as mp (mp.mata_pelajaran_id)}
+                                                            <div class="rounded-md border bg-background/80 p-2 text-xs">
+                                                                <div class="flex items-center justify-between gap-2">
+                                                                    <span class="font-semibold">{mp.nama_mata_pelajaran}</span>
+                                                                    {#if mp.rata_rata_nilai}
+                                                                        <Badge
+                                                                            variant="outline"
+                                                                            class="text-[10px] {nilaiBadgeClass(mp.rata_rata_nilai)}"
+                                                                        >
+                                                                            {mp.rata_rata_label} ({mp.rata_rata_skor})
+                                                                        </Badge>
+                                                                    {/if}
+                                                                </div>
+                                                                <div class="mt-0.5 text-[11px] text-muted-foreground">
+                                                                    Hadir: {mp.total_hadir}/{mp.total_pertemuan} pertemuan
+                                                                    {#if mp.komentar_terakhir}
+                                                                        &bull; &ldquo;{mp.komentar_terakhir}&rdquo;
+                                                                    {/if}
+                                                                </div>
+                                                            </div>
+                                                        {/each}
+                                                    </div>
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    {/if}
 
                                     {#if p.jadwal_asesmen && p.status_pendaftaran === 'asesmen'}
                                         <div class="mt-3 rounded-md border border-blue-200 bg-blue-50/50 p-2.5 text-xs dark:border-blue-900/40 dark:bg-blue-950/20">

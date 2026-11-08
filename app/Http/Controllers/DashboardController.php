@@ -128,7 +128,7 @@ class DashboardController extends Controller
             ];
         }
 
-        $pesertaList = PendaftaranPeserta::with(['jenisDisabilitas:id,nama', 'berkas'])
+        $pesertaModels = PendaftaranPeserta::with(['jenisDisabilitas:id,nama', 'berkas'])
             ->withCount([
                 'pertemuanPembelajaranPeserta as hadir_count' => fn ($q) => $q->where('presensi', 'hadir')
                     ->whereHas('pertemuan', fn ($pq) => $pq->where('status', 'acc')),
@@ -141,7 +141,21 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $pesertaIds = $pesertaList->pluck('id')->all();
+        $pesertaIds = $pesertaModels->pluck('id')->all();
+
+        $pesertaList = $pesertaModels->map(function (PendaftaranPeserta $item): array {
+            $lamaPembinaan = $item->calculateLamaPembinaan();
+            $ringkasan = $item->status_pendaftaran === 'lepas_mandiri'
+                ? $item->buildRingkasanPembelajaran()
+                : null;
+
+            return [
+                ...$item->toArray(),
+                'lama_pembinaan' => $lamaPembinaan['label'],
+                'lama_pembinaan_hari' => $lamaPembinaan['total_days'],
+                'ringkasan_pembelajaran' => $ringkasan,
+            ];
+        })->values()->all();
 
         $totalHadir = empty($pesertaIds)
             ? 0
@@ -179,8 +193,9 @@ class DashboardController extends Controller
 
         return [
             'stats' => [
-                'total_peserta' => $pesertaList->count(),
-                'peserta_diterima' => $pesertaList->where('status_pendaftaran', 'diterima')->count(),
+                'total_peserta' => $pesertaModels->count(),
+                'peserta_diterima' => $pesertaModels->whereIn('status_pendaftaran', ['diterima', 'pengajuan_lepas_mandiri', 'lepas_mandiri'])->count(),
+                'peserta_lepas_mandiri' => $pesertaModels->where('status_pendaftaran', 'lepas_mandiri')->count(),
                 'total_hadir' => $totalHadir,
                 'total_galeri' => $totalGaleri,
             ],
